@@ -1,0 +1,7 @@
+{
+	"browserSync": {
+		"proxy": "https://example.com",
+    "port": 3010,
+    "https": true
+	}
+}

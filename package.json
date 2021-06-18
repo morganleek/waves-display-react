@@ -1,0 +1,61 @@
+{
+  "name": "wp-buoy",
+  "version": "1.0.0",
+  "description": "Wordpress Buoy Tracker with Support for Multiple Buoy Types",
+  "main": "index.js",
+  "scripts": {
+    "start": "gulp",
+    "build": "gulp build --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/morganleek/wp-buoy.git"
+  },
+  "keywords": [
+    "Buoy"
+  ],
+  "author": "Morgan Leek",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/morganleek/wp-buoy/issues"
+  },
+  "homepage": "https://github.com/morganleek/wp-buoy#readme",
+  "dependencies": {
+    "bootstrap": "^4.6.0",
+    "chart.js": "^2.9.4",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.5.1",
+    "litepicker": "^1.5.7",
+    "load-google-maps-api": "^2.0.2",
+    "markerwithlabel": "^2.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.1",
+    "@babel/preset-env": "^7.13.0",
+    "@babel/preset-react": "^7.12.13",
+    "@babel/register": "^7.13.0",
+    "@react-google-maps/api": "^2.1.1",
+    "autoprefixer": "^9.8.6",
+    "babel-loader": "^8.2.2",
+    "browser-sync": "^2.26.13",
+    "classnames": "^2.2.6",
+    "csv-stringify": "^5.6.2",
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-if": "^3.0.0",
+    "gulp-imagemin": "^7.1.0",
+    "gulp-postcss": "^8.0.0",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-wp-pot": "^2.5.0",
+    "moment-locales-webpack-plugin": "^1.2.0",
+    "slugify": "^1.4.7",
+    "vinyl-named": "^1.1.0",
+    "webpack-bundle-analyzer": "^4.4.1",
+    "webpack-stream": "^5.2.1",
+    "yargs": "^15.4.1"
+  },
+  "theme_name": "wp_bouy"
+}

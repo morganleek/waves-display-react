@@ -1,0 +1,87 @@
+body {
+	--headers-height: 80px;
+	&.page-template---templateswave-display-list-php,
+	&.page-template---templateswave-overlay-test-php {
+		min-height: calc(100vh - var(--headers-height));
+		main {
+			margin: 0;
+			padding: 0;
+			article {
+				max-width: 100%;
+				@media (min-width: 768px) { 
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					height: calc(100vh - var(--headers-height));
+				}
+				#map {
+					min-height: 50vh;
+					@media (min-width: 768px) { 
+						min-height: none;
+					}
+				}
+				#map, #buoys {
+					@media (min-width: 768px) { 
+						height: calc(100vh - var(--headers-height));
+					}
+				}
+				#map {
+					@media (min-width: 768px) { 
+						grid-area: 1 / 1 / 2 / 3;
+					}
+				}
+				#buoys {
+					overflow: scroll;
+					padding: 10px;
+					@media (min-width: 768px) { 
+						grid-area: 1 / 1 / 2 / 3;
+						& > div[id^="buoy-"] {
+							padding-left: 50%;
+							transition: all 0.3s;
+							&.expanded {
+								padding-left: 25%;
+							}
+						}
+					}
+				}
+			}
+		}
+		&.admin-bar {
+			--headers-height: 112px;
+		}
+	}
+	&.page-template---templateswave-overlay-test-php {
+		main {
+			article {
+				@media (min-width: 768px) { 
+					grid-template-columns: 1fr;
+				}
+			}
+		}
+	}
+	&.page-template-wave-display-react {
+		min-height: calc(100vh - var(--headers-height));
+		#root {
+			max-width: 100%;
+			@media (min-width: 768px) { 
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				height: calc(100vh - var(--headers-height));
+			}
+			.maps {
+				min-height: 50vh;
+				@media (min-width: 768px) { 
+					min-height: none;
+				}
+			}
+			.maps, .charts {
+				@media (min-width: 768px) { 
+					height: calc(100vh - var(--headers-height));
+				}
+			}
+			.charts {
+				overflow: scroll;
+				padding: 10px;
+			}
+		}
+	}
+}
