@@ -26,3 +26,18 @@ export function getBuoy( buoyId ) {
       .then( json => json );
   }
 }
+
+export function getDriftingBuoys() {
+  if( typeof( wad ) != "undefined" ) {
+    const init = {
+      method: 'POST'
+    }
+    return fetch( wad.ajax + "?action=waf_rest_list_buoys_drifting", init ) 
+      .then( response => {
+        if( !response.ok ) throw Error( response.statusText );
+        // console.log( response );
+        return response.json();
+      } )
+      .then( json => json );
+  }
+}
