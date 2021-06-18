@@ -67,7 +67,7 @@ export const copy = () => {
 //     .pipe(dest(''));
 // }
 export const scripts = () => {
-  return src(['src/js/bundle.js','src/js/admin.js'])
+  return src(['src/js/index.js'])
   .pipe(named())
   .pipe(webpack({
     module: {

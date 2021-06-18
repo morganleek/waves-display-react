@@ -1,7 +1,6 @@
 // Charts - React.js
 import React, { Component, Fragment } from "react";
-import { wadRawDataToChartData } from '../../chart/buoy-data';
-import { wadGenerateChartData } from '../../chart/chart';
+import { wadRawDataToChartData, wadGenerateChartData } from '../../chart';
 import { Line } from 'react-chartjs-2';
 import { getBuoys, getBuoy } from '../fetch';
 // import styles from './style';

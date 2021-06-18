@@ -22,12 +22,13 @@
   "homepage": "https://github.com/morganleek/wp-buoy#readme",
   "dependencies": {
     "bootstrap": "^4.6.0",
-    "chart.js": "^2.9.4",
+    "chart.js": "^3.0.0",
     "font-awesome": "^4.7.0",
     "jquery": "^3.5.1",
     "litepicker": "^1.5.7",
     "load-google-maps-api": "^2.0.2",
-    "markerwithlabel": "^2.0.2"
+    "markerwithlabel": "^2.0.2",
+    "react-chartjs-2": "^3.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.13.1",
