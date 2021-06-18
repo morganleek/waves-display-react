@@ -1,8 +1,8 @@
 // Charts - React.js
 import React, { Component, Fragment } from "react";
-import { wadRawDataToChartData, wadGenerateChartData } from '../../chart';
+import { wadRawDataToChartData, wadGenerateChartData } from '../chart';
 import { Line } from 'react-chartjs-2';
-import { getBuoys, getBuoy } from '../fetch';
+import { getBuoys, getBuoy } from '../api/buoys';
 // import styles from './style';
 // import DateRangePicker from '@wojtekmaj/react-daterange-picker';
 

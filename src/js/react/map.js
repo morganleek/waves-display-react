@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { getBuoys } from './fetch';
+import { getBuoys } from '../api/buoys';
 
 const containerStyle = {
   width: '100%',
