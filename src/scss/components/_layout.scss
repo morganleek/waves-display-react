@@ -86,6 +86,7 @@ body {
 			@media (min-width: 768px) { 
 				display: grid;
 				grid-template-columns: 1fr 1fr;
+				column-gap: 20px;
 				height: calc(100vh - var(--headers-height));
 			}
 			.maps {
@@ -101,7 +102,7 @@ body {
 			}
 			.maps {
 				@media (min-width: 768px) { 
-					grid-area: 1 / 1 / 2 / 3;
+					grid-area: 1 / 1 / 2 / 2;
 				}
 			}
 			.charts {

@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from "react";
-import { wadRawDataToChartData } from '../../chart/buoy-data';
-import { wadGenerateChartData } from '../../chart/chart';
 import { Line } from 'react-chartjs-2';
-import { getBuoys, getBuoy } from '../logic';
+
+import { wadRawDataToChartData, wadGenerateChartData } from './api/chart';
+import { getBuoys, getBuoy } from './api/buoys';
+
 const classNames = require('classnames');
 
 export class Charts extends Component {
@@ -44,43 +45,6 @@ export class Charts extends Component {
     return (
       <div className="charts">
         <div>{ chartsLoopRender }</div>
-      </div>
-    );
-  }
-}
-
-export class ChartTable extends Component {
-  constructor( props ) {
-    super( props );
-    
-    this.state = {
-      active: false
-    }
-  }
-
-  render( ) {
-    // Iterate through chart table items
-    let lineTableRender = [];
-    for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
-      // Last value
-      const last = ( value.data.length > 0 ) ? value.data[ value.data.length - 1 ].y : 0;
-      // Last Updates
-      // this.props.lastUpdated;
-      // const lastUpdate = moment( this.props.lastUpdated * 1000 );
-      // const queryTime = moment( window.buoysData.get( parseInt( buoyId ) ).now * 1000 );
-      if( last > 0 ) {
-        lineTableRender.push( <li key={ key }>
-          { value.description }
-          <span>{ last }</span>
-        </li> );
-      }
-    }
-
-    return (
-      <div className={ classNames( "chart-info", { "expanded": this.state.active } ) }
-        onClick={ () => this.setState( { active: !this.state.active } ) } >
-        <h5 className='latest-observations'>Latest Observations</h5>
-        <ul>{ lineTableRender }</ul>
       </div>
     );
   }
@@ -164,6 +128,43 @@ export class Chart extends Component {
           </div>
         </div>
       </>
+    );
+  }
+}
+
+export class ChartTable extends Component {
+  constructor( props ) {
+    super( props );
+    
+    this.state = {
+      active: false
+    }
+  }
+
+  render( ) {
+    // Iterate through chart table items
+    let lineTableRender = [];
+    for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
+      // Last value
+      const last = ( value.data.length > 0 ) ? value.data[ value.data.length - 1 ].y : 0;
+      // Last Updates
+      // this.props.lastUpdated;
+      // const lastUpdate = moment( this.props.lastUpdated * 1000 );
+      // const queryTime = moment( window.buoysData.get( parseInt( buoyId ) ).now * 1000 );
+      if( last > 0 ) {
+        lineTableRender.push( <li key={ key }>
+          { value.description }
+          <span>{ last }</span>
+        </li> );
+      }
+    }
+
+    return (
+      <div className={ classNames( "chart-info", { "expanded": this.state.active } ) }
+        onClick={ () => this.setState( { active: !this.state.active } ) } >
+        <h5 className='latest-observations'>Latest Observations</h5>
+        <ul>{ lineTableRender }</ul>
+      </div>
     );
   }
 }

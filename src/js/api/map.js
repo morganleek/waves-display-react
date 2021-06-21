@@ -1,29 +1,28 @@
 import $ from 'jquery';
-// Google Maps
-const loadGoogleMapsApi = require('load-google-maps-api');
-// let map;
+import { wadRawDataToChartData } from './chart';
+const loadGoogleMapsApi = require('load-google-maps-api'); // Google Maps
 
-import { wadRawDataToChartData } from '../chart/buoy-data';
+export function wadInitMap( buoys ) {
+	wadDrawMap( buoys );
+}
 
-// $(function() {
-export function wadDrawMap( buoys ) {
-	if( wad.googleApiKey != undefined ) {
+// Map - Render + Markers
+function wadDrawMap( buoys ) {
+	if( wad.googleApiKey != undefined ) { // Maps API Key Setup
 		// Maps
 		if( document.getElementById( 'map' ) ) {
-			
+			// Load API
 			loadGoogleMapsApi( {
 				key: wad.googleApiKey
 			} ).then( ( googleMaps ) => {
 				// For later 
-				window.myGoogleMaps = googleMaps;
-				// Labels
-				const MarkerWithLabel = require( 'markerwithlabel' )( googleMaps );
-
+				window.myGoogleMaps = googleMaps; // Global Maps Class
+				// Centre Map + Set Zoom
 				const lat = parseFloat( wad.googleLat );
 				const lng = parseFloat( wad.googleLng );
 				const zoom = ( window.innerWidth < 1200 ) ? 4 : 5;
 				const latLng = { lat: lat, lng: lng };
-	
+				// Create Map
 				window.myMap = new googleMaps.Map(
 					document.getElementById( 'map' ), {
 						center: latLng,
@@ -33,42 +32,13 @@ export function wadDrawMap( buoys ) {
 					}
 				);
 
-				// Zoom for labels
+				// Zoom for Drifting Date Labels
 				window.myMap.addListener( 'zoom_changed', wadToggleDriftingLabels );
 
-				// map.addListener( "click", ( e ) => { console.log( e.latLng.lat() ); console.log( e.latLng.lng() ); } );
-				// { -23.001983515270528, 122.07808387499998 }
-				window.myMapMarkers = new Map();
-
-				// Set markers
-				for(var i = 0; i < buoys.length; i++) {
-					// if( buoys[i].drifting == 0 ) {
-					// console.log( buoys[i].id + ":" + buoys[i].label + ' (' + buoys[i].lat + ', ' + buoys[i].lng + ')' );
-					var point = new MarkerWithLabel({
-						position: {
-							lat: parseFloat(buoys[i].lat), 
-							lng: parseFloat(buoys[i].lng)
-						},
-						map: window.myMap,
-						title: buoys[i].label,
-						labelContent: buoys[i].web_display_name,
-						labelAnchor: new googleMaps.Point(0, -2),
-						labelClass: "buoy-" + buoys[i].id,
-						labelStyle: { opacity: 0.9 }
-					});
-					// Push on to marker stack
-					window.myMapMarkers.set( parseInt( buoys[i].id ), point );
-
-					googleMaps.event.addListener( point, "click", function( e ) { 
-						const buoy = this.labelClass;
-						if( document.getElementById( buoy ) ) {
-							document.getElementById( buoy )
-								.scrollIntoView({ behavior: 'smooth' });
-						}
-					} );
-				}
-				// }
-				// Drifting Buoy Data
+				// Draw Markers
+				wadDrawMarkers( buoys );
+				
+				// Fetch Drifting Buoy Data
 				wadDrifting( );
 			}).catch( (e) => {
 				console.error(e);
@@ -77,23 +47,73 @@ export function wadDrawMap( buoys ) {
 	}
 }
 
+// Markers - Render 
+function wadDrawMarkers( buoys ) {
+	// Local global 
+	let googleMaps = window.myGoogleMaps;
+
+	// Labels
+	const MarkerWithLabel = require( 'markerwithlabel' )( googleMaps );
+	
+	// Key/value pair for Makers
+	window.myMapMarkers = new Map();
+
+	// Set markers
+	for(var i = 0; i < buoys.length; i++) {
+		// Create Point + Title
+		var point = new MarkerWithLabel({
+			position: {
+				lat: parseFloat(buoys[i].lat), 
+				lng: parseFloat(buoys[i].lng)
+			},
+			map: window.myMap,
+			title: buoys[i].label,
+			labelContent: buoys[i].web_display_name,
+			labelAnchor: new googleMaps.Point(0, -2),
+			labelClass: "buoy-" + buoys[i].id,
+			labelStyle: { opacity: 0.9 }
+		});
+
+		// Push on to marker stack
+		window.myMapMarkers.set( parseInt( buoys[i].id ), point );
+
+		// Add listener for each marker
+		googleMaps.event.addListener( point, "click", function( e ) { 
+			const buoy = this.labelClass;
+			if( document.getElementById( buoy ) ) {
+				document.getElementById( buoy )
+					.scrollIntoView({ behavior: 'smooth' });
+			}
+		} );
+	}
+}
+
+// Markers - Click Event
 export function wadMapLocator ( trigger ) {
 	if( trigger != "undefined" ) {
 		trigger.addEventListener( 'click', ( e ) => {
 			const buoyId = parseInt( e.target.dataset.buoyId );
-			// console.log( e.target.dataset );
-			// console.log( typeof( buoyId ) );
-			// console.log( window.myMapMarkers );
 			if( window.myMapMarkers.has( buoyId ) ) {
-				// console.log( window.myMapMarkers.get( buoyId ) );
 				const marker = window.myMapMarkers.get( buoyId );
 				const center = { 
 					lat: marker.position.lat(),
 					lng: marker.position.lng()
 				};
+
+				const bounds = {
+					east: ( marker.position.lng() + 0.3 ),
+					north: ( marker.position.lat() + 0.1 ),
+					south: ( marker.position.lat() - 0.1 ),
+					west: ( marker.position.lng() - 0.1 )
+				};
+
+				// Centre
 				window.myMap.panTo( center )
+				// Go to centre zoom level 8
 				window.myMap.setZoom( 8 );
-				// Animate
+				// Ajdust because map covers entire page but only half is visible
+				window.myMap.panBy( window.innerWidth / 4, 0 );
+				// Bounce Animation
 				if( marker.getAnimation() > 0 ) {
 					marker.setAnimation( undefined );
 				}
@@ -109,17 +129,19 @@ export function wadMapLocator ( trigger ) {
 	}
 }
 
-export function wadDrifting( ) {
+// Drifting Markers - Fetch 
+function wadDrifting( ) {
 	$.ajax({
     type: 'POST',
     url: wad.ajax,
     data: { action: 'waf_rest_list_buoys_drifting' },
-    success: wadProcessDriftingBuoys, // Process list received
+    success: wadDrawDriftingMarkers, // Process list received
     dataType: 'json'
   });
 }
 
-export function wadProcessDriftingBuoys( response ) {
+// Drifting Markers - Render 
+function wadDrawDriftingMarkers( response ) {
 	if( window.myGoogleMaps ) {
 		for( let i = 0; i < response.length; i++ ) {
 			const processed = wadRawDataToChartData( response[i].data );
@@ -182,39 +204,26 @@ export function wadProcessDriftingBuoys( response ) {
 						}
 					}
 				}
-				
-
-				// // Push on to marker stack
-				// window.myMapMarkers.set( parseInt( buoys[i].id ), point );
-
-				// googleMaps.event.addListener( point, "click", function( e ) { 
-				// 	const buoy = this.labelClass;
-				// 	if( document.getElementById( buoy ) ) {
-				// 		document.getElementById( buoy )
-				// 			.scrollIntoView({ behavior: 'smooth' });
-				// 	}
-				// } );
 
 				window.driftingPoints.push( point );
 			}
-
-
 		}
 	}
 }
 
+// Drifting Markers - Zoom Appearance
 function wadToggleDriftingLabels() {
-	if( typeof( window.myMap ) !== undefined ) {
+	if( typeof( window.myMap ) != "undefined" ) {
 		const isVisible = ( window.myMap.getZoom() >= 8 );
-		if( typeof( window.driftingPoints ) !== undefined ) {
+		if( typeof( window.driftingPoints ) != "undefined" ) {
 			window.driftingPoints.forEach( element => {
 				element.setVisible( isVisible );
 			} );
 		}
-		
 	}
 }
 
+// Map Styles
 const mapStyles = [
 	{
 		"featureType": "all",
