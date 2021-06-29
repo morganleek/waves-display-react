@@ -1,7 +1,7 @@
 // Charts - React.js
 import React, { useState, Component, Fragment } from "react";
 import { render } from "react-dom";
-import { Charts } from './chart';
+import { Charts } from './chart/Chart';
 import { Map } from './map/Map';
 
 // const classNames = require( 'classnames' );

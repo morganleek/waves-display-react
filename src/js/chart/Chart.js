@@ -1,8 +1,10 @@
 import React, { Component, Fragment } from "react";
 import { Line } from 'react-chartjs-2';
+import 'chartjs-adapter-luxon';
+// import { DateTime } from 'luxon'; 
 
-import { wadRawDataToChartData, wadGenerateChartData } from './api/chart';
-import { getBuoys, getBuoy } from './api/buoys';
+import { wadRawDataToChartData, wadGenerateChartData } from '../api/chart';
+import { getBuoys, getBuoy } from '../api/buoys';
 
 const classNames = require('classnames');
 
@@ -50,13 +52,43 @@ export class Charts extends Component {
   }
 }
 
+function timeCallback( tickValue, index, ticks ) {
+  return tickValue.split(" ");
+}
+
+const constOptions = {
+  scales: {
+    y: {
+      position: "right"
+      
+    },
+    "y-axis-1": {
+      position: "right"
+      
+    },
+    x: {
+      grid: {
+        borderColor: 'red'
+      }
+    }
+  },
+  plugins: {
+    title: {
+        display: true,
+        text: 'Custom Chart Title'
+    }
+  }
+};
+
+
+
 export class Chart extends Component {
   constructor( props ) {
     super( props );
     
     this.state = {
-      data: []
-    }
+      data: [],
+		}
   }
 
 	handleCentreClick() {
@@ -89,6 +121,7 @@ export class Chart extends Component {
   componentDidMount() {
     getBuoy( this.props.buoyId ).then( json => {
       if( json.success == 1 ) {
+
         this.setState( {
           data: wadGenerateChartData( wadRawDataToChartData( json.data ) )
         } );
@@ -102,8 +135,8 @@ export class Chart extends Component {
 		let buttonGroup;
     const { data } = this.state;
     const buoyLabel = this.props.buoyLabel;
+		
     if( Object.keys( data ).length > 0 ) {
-      // dateRangeLabel = <time>{ data.timeLabel }</time>;
       chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) }>
@@ -131,6 +164,7 @@ export class Chart extends Component {
     );
   }
 }
+
 
 export class ChartTable extends Component {
   constructor( props ) {

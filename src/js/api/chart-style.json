@@ -1,5 +1,19 @@
 {
 	"axesStyles" : { 
+		"x": {
+			"type": "time",
+			"time": {
+				"tooltipFormat": "DD T HH:mm"
+			},
+			"title": {
+				"display": true
+			},
+			"ticks": {
+				"maxTicksLimit": 7,
+				"autoSkip": false,
+				"maxRotation": 0
+			}
+		},
 		"timeAxes" : {
 			"distribution": "linear",
 			"ticks": {
@@ -12,11 +26,11 @@
 				"stepSize": 8,
 				"unit": "hour",
 				"displayFormats": {
-					"hour": "D/MM H:mm", 
+					"hour": "D/MM H:mm",
 					"minute": "ha"
 				}
 			},
-			"scaleLabel": {
+			"title": {
 				"display": false
 			}
 		},
@@ -31,9 +45,9 @@
 				"max": 20,
 				"maxTicksLimit": 6
 			},
-			"scaleLabel": {
+			"title": {
 				"display": false,
-				"labelString": "Wave height (m)"
+				"text": "Wave height (m)"
 			}
 		},
 		"peakPeriodAxes": {
@@ -50,9 +64,12 @@
 				"max": 20,
 				"maxTicksLimit": 6
 			},
-			"scaleLabel": {
+			"title": {
 				"display": false,
-				"labelString": "Peak period (s)"
+				"text": "Peak period (s)"
+			},
+			"grid": {
+				"drawOnChartArea": false
 			}
 		},
 		"windSpeedAxes": {
@@ -65,9 +82,12 @@
 				"min": 0,
 				"maxTicksLimit": 6
 			},
-			"scaleLabel": {
+			"title": {
 				"display": true,
-				"labelString": "Wind speed (m/s & deg)"
+				"text": "Wind speed (m/s & deg)"
+			},
+			"grid": {
+				"drawOnChartArea": false
 			}
 		},
 		"tempAxes": {
@@ -84,9 +104,12 @@
 				"max": 25,
 				"maxTicksLimit": 6
 			},
-			"scaleLabel": {
+			"title": {
 				"display": false,
-				"labelString": "Temp (Deg C)"
+				"text": "Temp (Deg C)"
+			},
+			"grid": {
+				"drawOnChartArea": false
 			}
 		}
 	}

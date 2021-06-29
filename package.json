@@ -23,6 +23,7 @@
   "dependencies": {
     "bootstrap": "^4.6.0",
     "chart.js": "^3.0.0",
+    "chartjs-adapter-luxon": "^1.0.0",
     "font-awesome": "^4.7.0",
     "jquery": "^3.5.1",
     "litepicker": "^1.5.7",
@@ -51,6 +52,7 @@
     "gulp-sass": "^4.0.2",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-wp-pot": "^2.5.0",
+    "luxon": "^1.27.0",
     "moment-locales-webpack-plugin": "^1.2.0",
     "slugify": "^1.4.7",
     "vinyl-named": "^1.1.0",
