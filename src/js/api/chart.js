@@ -586,7 +586,7 @@ export function generateDataPoints( includes ) {
 			showInChart: true, 
 			label: window.innerWidth >= 768 ? 'Significant Wave Height (m)' : 'Sig Wave (m)',
 			description: "Significant Wave Height (m)",
-			backgroundColor: 'rgba(165, 223, 223, 1)',
+			backgroundColor: 'rgba(165, 223, 223, 0.6)',
 			borderColor: 'rgba(75, 192, 192, 1)',
 			borderWidth: 2,
 			lineTension: 0,
