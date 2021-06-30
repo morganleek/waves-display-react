@@ -3,7 +3,7 @@ import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-luxon';
 // import { DateTime } from 'luxon'; 
 
-import { wadRawDataToChartData, wadGenerateChartData } from '../api/chart';
+import { wadRawDataToChartData, wadGenerateChartData, wadGetAspectRatio } from '../api/chart';
 import { getBuoys, getBuoy } from '../api/buoys';
 
 const classNames = require('classnames');
@@ -30,17 +30,19 @@ export class Charts extends Component {
     let chartsLoopRender;
     if( buoys.length > 0 ) {
 			chartsLoopRender = buoys.map( ( row, index ) => {    
+        // <div className={ classNames( ['card', 'card-primary', 'mb-3'] ) } key={ index }>
 				return (
-					<div className={ classNames( ['card', 'card-primary', 'mb-3'] ) } key={ index }>
-						<Chart buoyId={ row.id } 
-									 buoyLabel={ row.web_display_name } 
-									 buoyLastUpdated={ row.last_update } 
-									 buoyLat={ row.lat } 
-									 buoyLng={ row.lng }
-                   updateCenter={ this.props.updateCenter }
-                   updateZoom={ this.props.updateZoom } />
-					</div>
-				)
+          <Chart buoyId={ row.id } 
+                buoyLabel={ row.web_display_name } 
+                buoyLastUpdated={ row.last_update } 
+                buoyLat={ row.lat } 
+                buoyLng={ row.lng }
+                updateCenter={ this.props.updateCenter }
+                updateZoom={ this.props.updateZoom }
+                key={ index }
+          />
+        )
+        //  </div>
 			} );
     }
 
@@ -88,7 +90,81 @@ export class Chart extends Component {
     
     this.state = {
       data: [],
+      isExpanded: false
 		}
+  }
+
+  handleExpandClick() {
+    this.setState( { isExpanded: !this.state.isExpanded } );
+    console.log( 'handleExpandClick' );
+
+    // if( buoyWrapper && canvasWrapper ) {
+    //   // Toggle width
+    //   buoyWrapper.classList.toggle('expanded');
+    //   // Remove legends
+    //   const canvasLegend = buoyWrapper.querySelector( '.canvas-legend' );
+    //   if( canvasLegend ) {
+    //     canvasLegend.innerHTML = '';
+    //   }
+      
+    //   // All new charts
+    //   let charts;
+    //   let multiplier = 1; // Adjust height for wider layouts
+    //   if( !e.target.classList.contains( 'expanded' ) ) {
+    //     multiplier = 0.65;
+    //     e.target.classList.add( 'expanded' );
+    //     e.target.innerHTML = '<i class="fa fa-compress" aria-hidden="true"></i> Collapse';
+      
+    //     // Charts
+    //     charts = [
+    //       { hsig: true }, 
+    //       { tp: true }, 
+    //       { sst: true }, 
+    //       { bottomTemp: true },
+    //       { windspeed: true }
+    //     ];
+    //   }
+    //   else {
+    //     e.target.classList.remove( 'expanded' );
+    //     e.target.innerHTML = '<i class="fa fa-expand" aria-hidden="true"></i> Expand';
+
+    //     // Charts
+    //     charts = [{ hsig: true,
+    //       tp: true,
+    //       sst: false, 
+    //       bottomTemp: false 
+    //     }];
+    //   }
+      
+    //   // Clear existing
+    //   canvasWrapper.innerHTML = '';
+    //   for( let i = 0; i < charts.length; i++ ) {
+    //     // Create chart data
+    //     const chartData = wadGenerateChartData( window.myChartData['buoy-' + buoyId], charts[i], multiplier );
+    //     if( chartData.config.data.datasets.length > 0 ) {
+    //       // OG Chart
+    //       if( charts.length == 1 ) {
+    //         // Create heading
+    //         const singleHeading = document.createElement( 'h4' );
+    //         singleHeading.className = "text-center";
+    //         singleHeading.innerHTML = chartData.config.data.datasets[0].label;
+    //         canvasWrapper.appendChild( singleHeading );
+
+    //         // Legends
+    //         wadDrawChartLegend( buoyId, chartData.config );
+    //       }
+    //       // Create canvas
+    //       const singleCanvas = document.createElement( 'canvas' );
+    //       // singleCanvas.className = charts[i];
+    //       canvasWrapper.appendChild( singleCanvas );
+    //       // Context
+    //       const canvasContext = singleCanvas.getContext( '2d' );
+    //       // Draw
+    //       wadDrawChart( chartData.config, canvasContext );
+
+    //     }
+    //   }
+    // }	
   }
 
 	handleCentreClick() {
@@ -133,13 +209,34 @@ export class Chart extends Component {
     let chartGraph = <p>Loading &hellip;</p>;
     let chartTable; // , dateRangeLabel;
 		let buttonGroup;
-    const { data } = this.state;
+    const { data, isExpanded } = this.state;
+    const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
     const buoyLabel = this.props.buoyLabel;
 		
     if( Object.keys( data ).length > 0 ) {
-      chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
+      if( isExpanded ) {
+        // Split apart
+        let chartGraphTemp = [];
+        // Clone options
+        let optionsClone = Object.assign( {}, data.config.options );
+        optionsClone.plugins = {} // Not legend title
+        optionsClone.aspectRatio = wadGetAspectRatio( 0.5 ); // Half aspect ratio
+        
+        data.config.data.datasets.forEach( ( dataset, j ) => {
+          const datasetClone = Object.assign( {}, dataset );
+          // console.log( datasetClone );
+          datasetClone.hidden = false;
+          chartGraphTemp.unshift( <Line data={ { labels: data.config.data.labels, datasets: [ datasetClone ] } }  options={ optionsClone } key={ j } /> );
+        } );
+        chartGraph = chartGraphTemp;
+      }
+      else {
+        // All in one
+        chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
+      }
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) }>
+        <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleCentreClick() }><i className={ classNames( ['fa'], ['fa-crosshairs'] ) }></i> Centre</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleDatePickerClick() }>
@@ -149,7 +246,7 @@ export class Chart extends Component {
     }
 
     return (
-      <>
+      <div className={ classNames( ['card', 'card-primary', 'mb-3'], { expanded: isExpanded } ) }>
         <div className={ classNames( ['card-header', 'clearfix'] ) }>
           <h6 className='pull-left'>{ buoyLabel }</h6>
 					{ buttonGroup }
@@ -160,7 +257,7 @@ export class Chart extends Component {
             { chartTable }
           </div>
         </div>
-      </>
+      </div>
     );
   }
 }

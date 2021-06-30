@@ -18,7 +18,13 @@ export class Map extends Component {
     this.state = {
 			ref: null,
 			markers: [],
-			polylines: []
+			polylines: [],
+			minLat: 90,
+			maxLat: -90,
+			minLng: 180,
+			maxLng: -180,
+			boundsSet: false,
+			initBoundsSet: false
     }
   }
 
@@ -36,6 +42,15 @@ export class Map extends Component {
 					this.setState( { markers: [...this.state.markers, marker] } );
 				} );
 			}
+			// Bounds
+			this.state.markers.forEach( ( buoy, i ) => {
+				this.setState( { minLat : ( this.state.minLat < buoy.lat ) ? this.state.minLat : buoy.lat } );
+				this.setState( { maxLat : ( this.state.maxLat > buoy.lat ) ? this.state.maxLat : buoy.lat } );
+				this.setState( { minLng : ( this.state.minLng < buoy.lng ) ? this.state.minLng : buoy.lng } );
+				this.setState( { maxLng : ( this.state.maxLng > buoy.lng ) ? this.state.maxLng : buoy.lng } );
+			} );
+			this.setState( { boundsSet: true } );
+			this.setBounds( );
     } );
 
 		// Get drifting
@@ -78,7 +93,6 @@ export class Map extends Component {
 				lat: parseFloat( marker.latLng.lat() ), 
 				lng: parseFloat( marker.latLng.lng() ) 
 			};
-			console.log( ref.getZoom() );
 			
 			// Pan to and zoom
 			ref.panTo( newCenter );
@@ -90,6 +104,27 @@ export class Map extends Component {
 
 	onLoad = ( ref ) => {
 		this.setState( { ref: ref } );
+	}
+
+	onBoundsChanged = ( ) => {
+		this.setBounds( );
+	}
+
+	setBounds = ( ) => {
+		// Set initial bounds
+		const { boundsSet, initBoundsSet, ref } = this.state;
+		if( ref && boundsSet && !initBoundsSet ) {
+			const { minLat, minLng, maxLat, maxLng } = this.state;
+			// Ensure it doesn't happen on resize
+			this.setState( { initBoundsSet: true } );
+			// Set bounds
+			ref.fitBounds( {
+				east: maxLng, 
+				west: minLng,
+				north: maxLat, 
+				south: minLat 
+			} );
+		}
 	}
 
   render() {
@@ -119,6 +154,7 @@ export class Map extends Component {
 					zoom={ zoom }
 					options={{ styles: mapStyles }}
 					onLoad={ this.onLoad }
+					onBoundsChanged={ this.onBoundsChanged }
 				>
 					<>{ cluster }{ polylines }</>
 				</GoogleMap>

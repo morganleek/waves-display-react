@@ -1,71 +1,7 @@
 import $ from 'jquery';
 import Chart from 'chart.js';
-// import Litepicker from 'litepicker';
-import { wadMapLocator } from './map';
 import chartStyles from './chart-style';
-// import moment from 'moment';
 import { DateTime } from 'luxon'; 
-
-// Create Divs for each buoy and call Ajax for each one's data
-export function wadInitCharts( response ) {
-	const buoysWrapper = document.getElementById( 'buoys' );
-	// Save Buoy Data 
-	if( window.buoysData == undefined ) {
-		window.buoysData = new Map();
-	}
-	// Setup boxes
-	for( let i = 0; i < response.length; i++ ) {
-		// Push on to stack
-		window.buoysData.set( parseInt( response[i].id ), response[i] );
-		// Setup visuals
-		const newBuoyWrapper = document.createElement( "div" );
-		newBuoyWrapper.id = "buoy-" + response[i].id;
-		// Internals
-		const newPanelWrapper = panelWrapper.replaceAll( '{{ buoyLabel }}', response[i].web_display_name )
-			.replaceAll( '{{ buoyId }}', response[i].id )
-			.replaceAll( '{{ buoyLat }}', response[i].lat )
-			.replaceAll( '{{ buoyLng }}', response[i].lng )
-			.replaceAll( '{{ buoyStartTime }}', response[i].start_date )
-			.replaceAll( '{{ buoyEndTime }}', response[i].end_date );
-		newBuoyWrapper.insertAdjacentHTML( 'afterbegin', newPanelWrapper );
-		// Setup buttons
-		wadDatePicker( newBuoyWrapper.getElementsByClassName( "calendars-trigger" )[0] );
-		wadMapLocator( newBuoyWrapper.getElementsByClassName( "maps-trigger" )[0] );
-		wadCSVDownload( newBuoyWrapper.getElementsByClassName( "download-trigger" )[0] );
-		wadExpandCharts( newBuoyWrapper.getElementsByClassName( "expand-trigger" )[0] );
-		
-		// Attach
-		buoysWrapper.appendChild( newBuoyWrapper );
-		
-		// Fetch data
-		$.ajax({
-			type: 'POST',
-			url: wad.ajax,
-			data: { 
-				action: 'waf_rest_list_buoy_datapoints',
-				id: response[i].id
-			},
-			success: wadProcessBuoyData,
-			dataType: 'json'
-		});
-
-		// Clear memplots
-		if( document.querySelector( "#buoy-" + response[i].id + " .memplot img" ) ) {
-			document.querySelector( "#buoy-" + response[i].id + " .memplot img" ).remove(); // Clear existing 
-		}
-		// Fetch memplots
-		$.ajax({
-			type: 'POST',
-			url: wad.ajax,
-			data: { 
-				action: 'waf_rest_list_buoys_memplots',
-				id: response[i].id
-			},
-			success: wadProcessMemplots,
-			dataType: 'json'
-		});
-	}
-}
 
 // Tool for parsing Ints
 function parseIntOr( intVal, altVal ) {
@@ -89,67 +25,70 @@ function parseFloatOr( floatVal, altVal ) {
 	return parseFloat( floatVal );
 }
 
+// Reverse rotation
+function reverseRotation( rotation ) {
+	const reversed = parseIntOr( rotation, 0 ); 
+	return ( reversed < 0 ) ? 0 : ( reversed + 180 ) % 360;
+}
+
 // Process and sort data and push into chart
 export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 	if( !includes ) {
+		// Ordering 
 		includes = {
-			hsig: true,
-			tp: true,
 			sst: false, 
-			bottomTemp: false
+			bottomTemp: false,
+			tp: true,
+			hsig: true
 		};
 	}
 
 	if( typeof( waves ) != "undefined" && waves.length > 0 ) {
-		// let arrowPointers = [];
-		// let hasWaves = false;
 		let chartLabels = [];
 		let dataPoints = generateDataPoints( includes );
 
 		// Loop
-		for( let i = 0; i < waves.length; i++ ) {
+		waves.forEach( ( wave, i ) => {
 			// Time as moment object with offset
-			const time = parseInt( waves[i]['Time (UNIX/UTC)'] ) * 1000; // moment.unix( parseInt( waves[i].time ) ); // .utcOffset( buoyOffset );
+			const time = parseInt( wave['Time (UNIX/UTC)'] ) * 1000; // moment.unix( parseInt( wave.time ) ); // .utcOffset( buoyOffset );
 			chartLabels.push( time );
 
-			if( waves[i]["QF_waves"] == "1" ) {
-				// hasWaves = true; // Needs to be here incase there are no valid waves
+			// Has quality data
+			if( wave["QF_waves"] == "1" ) {
 				// Values
-				if( parseFloatOr( waves[i]["Hsig (m)"], -1 ) > 0 ) {
-					dataPoints.hsig.data.push( { x: time, y: parseFloatOr( waves[i]["Hsig (m)"], 0.0 ) } );
+				if( parseFloatOr( wave["Hsig (m)"], -1 ) > 0 ) {
+					dataPoints.hsig.data.push( { x: time, y: parseFloatOr( wave["Hsig (m)"], 0.0 ) } );
 				}
 				// Peak
-				if( parseFloatOr( waves[i]["Tp (s)"], -1 ) > 0 ) {
-					dataPoints.tp.data.push( { x: time, y: parseFloatOr( waves[i]["Tp (s)"], 0.0 ) } );
-					const dpDeg = parseIntOr( waves[i]["Dp (deg)"], 0 ); // Rotation
-					dataPoints.tp.rotation.push( ( dpDeg < 0 ) ? 0 : ( dpDeg + 180 ) % 360 );
+				if( parseFloatOr( wave["Tp (s)"], -1 ) > 0 ) {
+					dataPoints.tp.data.push( { x: time, y: parseFloatOr( wave["Tp (s)"], 0.0 ) } );
+					dataPoints.tp.rotation.push( reverseRotation( wave["Dp (deg)"] ) );
 				}
 				// Mean
-				if( parseFloatOr( waves[i]["Tm (s)"], -1 ) > 0 ) {
-					dataPoints.tm.data.push( { x: time, y: parseFloatOr( waves[i]["Tm (s)"], 0.0 ) } );
-					const dmDeg = parseIntOr( waves[i]["Dm (deg)"], 0 ); // Rotation
-					dataPoints.tm.rotation.push( ( dmDeg < 0 ) ? 0 : ( dmDeg + 180 ) % 360 );
+				if( parseFloatOr( wave["Tm (s)"], -1 ) > 0 ) {
+					dataPoints.tm.data.push( { x: time, y: parseFloatOr( wave["Tm (s)"], 0.0 ) } );
+					dataPoints.tm.rotation.push( reverseRotation( wave["Dm (deg)"] ) );
 				}
 				// Spread
-				if( parseFloatOr( waves[i]["DpSpr (deg)"], -1 ) > 0 ) {
-					dataPoints.dpspr.data.push( { x: time, y: parseFloatOr( waves[i]["DpSpr (deg)"], 0.0 ) } );
+				if( parseFloatOr( wave["DpSpr (deg)"], -1 ) > 0 ) {
+					dataPoints.dpspr.data.push( { x: time, y: parseFloatOr( wave["DpSpr (deg)"], 0.0 ) } );
 				}
-				if( parseFloatOr( waves[i]["DmSpr (deg)"], -1 ) > 0 ) {
-					dataPoints.dmspr.data.push( { x: time, y: parseFloatOr( waves[i]["DmSpr (deg)"], 0.0 ) } );
+				if( parseFloatOr( wave["DmSpr (deg)"], -1 ) > 0 ) {
+					dataPoints.dmspr.data.push( { x: time, y: parseFloatOr( wave["DmSpr (deg)"], 0.0 ) } );
 				}
 			}
-			if( waves[i]["QF_sst"] == "1" ) {
-				dataPoints.sst.data.push( { x: time, y: parseFloatOr( waves[i]["SST (degC)"], 0.0 ) } );
+			if( wave["QF_sst"] == "1" ) {
+				dataPoints.sst.data.push( { x: time, y: parseFloatOr( wave["SST (degC)"], 0.0 ) } );
 			}
-			if( waves[i]["QF_bott_temp"] == "1") {
-				dataPoints.bottomTemp.data.push( { x: time, y: parseFloatOr( waves[i]["Bottom Temp (degC)"], 0.0 ) } );
+			if( wave["QF_bott_temp"] == "1") {
+				dataPoints.bottomTemp.data.push( { x: time, y: parseFloatOr( wave["Bottom Temp (degC)"], 0.0 ) } );
 			}
-			dataPoints.windspeed.data.push( { x: time, y: parseFloatOr( waves[i]["WindSpeed (m/s)"], 0.0 ) } );
-			dataPoints.windspeed.rotation.push( parseFloatOr( waves[i]["WindDirec (deg)"], 0.0 ) );
+			dataPoints.windspeed.data.push( { x: time, y: parseFloatOr( wave["WindSpeed (m/s)"], 0.0 ) } );
+			dataPoints.windspeed.rotation.push( parseFloatOr( wave["WindDirec (deg)"], 0.0 ) );
 			// Only want last value
-			dataPoints.currentMag.data = [{ x: time, y: parseFloatOr( waves[i]["CurrmentMag (m/s)"], 0.0 ) }];
-			dataPoints.currentDir.data = [{ x: time, y: parseFloatOr( waves[i]["CurrentDir (deg) "], 0.0 ) }];
-		}
+			dataPoints.currentMag.data = [{ x: time, y: parseFloatOr( wave["CurrmentMag (m/s)"], 0.0 ) }];
+			dataPoints.currentDir.data = [{ x: time, y: parseFloatOr( wave["CurrentDir (deg) "], 0.0 ) }];
+		} );
 		
 		const startTime = Math.min(...waves.map( ( wave ) => wave['Time (UNIX/UTC)'] ) ) * 1000;
 		const endTime = Math.max(...waves.map( ( wave ) => wave['Time (UNIX/UTC)'] ) ) * 1000;
@@ -159,7 +98,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 		const maxWaveHeight = Math.ceil( Math.max( ...dataPoints.hsig.data.map( ( wave ) => wave.y ) ) );
 		const maxPeakPeriod = Math.ceil( Math.max( ...dataPoints.tp.data.map( ( wave )  => wave.y ) ) );
 		const minPeakPeriod = Math.floor( Math.min( ...dataPoints.tp.data.map( ( wave )  => wave.y ) ) );
-		const minPeakPeriodSpaced = ( maxPeakPeriod - ( ( maxPeakPeriod - minPeakPeriod ) * 2 ) );
+		// const minPeakPeriodSpaced = ( maxPeakPeriod - ( ( maxPeakPeriod - minPeakPeriod ) * 2 ) );
 		const maxTemp = Math.ceil( Math.max( ...dataPoints.sst.data.map( ( wave ) => wave.y ), ...dataPoints.bottomTemp.data.map( ( wave ) => wave.y ) ) );
 		const minTemp = Math.floor( Math.min( ...dataPoints.sst.data.map( ( wave ) => wave.y ), ...dataPoints.bottomTemp.data.map( ( wave ) => wave.y ) ) );
 
@@ -233,13 +172,13 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 			axes["y-axis-4"] = windSpeedAxes;
 		}
 
-		const sizing = ( window.innerWidth >= 992 ) ? 'desktop' : ( window.innerWidth >= 768 ) ? 'tablet' : ( window.innerWidth >= 450 ) ? 'mobileLandscape' : 'mobilePortrait';
-		const ratios = {
-			desktop: 2.15 / multiplier,
-			tablet: 2 / multiplier,
-			mobileLandscape: 1.75,
-			mobilePortrait: 1.5,
-		};
+		// const sizing = ( window.innerWidth >= 992 ) ? 'desktop' : ( window.innerWidth >= 768 ) ? 'tablet' : ( window.innerWidth >= 450 ) ? 'mobileLandscape' : 'mobilePortrait';
+		// const ratios = {
+		// 	desktop: 2 / multiplier,
+		// 	tablet: 2 / multiplier,
+		// 	mobileLandscape: 1.75,
+		// 	mobilePortrait: 1.5,
+		// };
 		
 		// Draw Chart
 		var config = {
@@ -247,7 +186,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 			data: data,
 			options: {
 				responsive: true,
-				aspectRatio: ratios[sizing],
+				aspectRatio: wadGetAspectRatio( multiplier ),
 				hoverMode: 'index',
 				stacked: false,
 				plugins: {
@@ -455,77 +394,6 @@ function wadProcessMemplot( response ) {
 	}
 }
 
-
-
-// Create charts from individual buoy data fetches
-export function wadProcessBuoyData( response ) {
-  if( response ) {
-    if( typeof( window.myCharts ) == "undefined" ) {
-      window.myCharts = [];
-    }
-    if( typeof( window.myChartData ) == "undefined" ) {
-      window.myChartData = [];
-    }
-    const buoyDiv = document.getElementById( 'buoy-' + response.buoy_id );
-    if( buoyDiv != null ) {
-      if( response.success == "1" ) {
-        // Convert to useful chart data
-        const processed = wadRawDataToChartData( response.data );
-        // Store in Window
-        window.myChartData['buoy-' + response.buoy_id] = processed;
-        // Generate Chart.js data
-        const chartData = wadGenerateChartData( processed );
-        // Draw chart lengend
-        wadDrawChartLegend( response.buoy_id, chartData.config );
-        // Draw chart tables
-        wadDrawLatestTable( response.buoy_id, chartData.dataPoints );
-        // Draw with chartData
-        const canvasContext = document.querySelector( '#buoy-' + response.buoy_id + ' canvas' );
-        if( canvasContext ) {
-          let chart = wadDrawChart( chartData.config, canvasContext );
-          
-          // Check my Charts if needed
-          if( typeof( window.myCharts ) == "undefined" ) {
-            window.myCharts = [];
-          }
-          // Destroy existing chart
-          if( window.myCharts.hasOwnProperty( 'buoy' + response.buoy_id ) ) {
-            window.myCharts['buoy' + response.buoy_id].destroy();
-          }
-          // Save chart
-          window.myCharts['buoy' + response.buoy_id] = chart;
-        }
-        // Update heading with time
-        wadDrawHeading( response.buoy_id, chartData.timeLabel, chartData.timeRange );
-        // Chart Appearance
-        const canvasWrapper = buoyDiv.getElementsByClassName( 'canvas-wrapper' )[0]; // .innerHTML = "No results found";
-        canvasWrapper.classList.remove( 'loading' );
-        canvasWrapper.classList.remove( 'no-results' );
-      }
-      else {
-        // No data returned
-        // const buoyDiv = document.getElementById( 'buoy-' + response.buoy_id );
-        const canvasWrapper = buoyDiv.getElementsByClassName( 'canvas-wrapper' )[0]; // .innerHTML = "No results found";
-        const chartInfo = buoyDiv.getElementsByClassName( 'chart-info' )[0];
-        canvasWrapper.classList.remove( 'loading' );
-        canvasWrapper.classList.add( 'no-results' );
-        // Destroy Chart if it exists
-        if ( window.myCharts.hasOwnProperty( 'buoy' + response.buoy_id ) ) {
-          window.myCharts['buoy' + response.buoy_id].destroy();
-          // Remove chart data
-          chartInfo.classList.add( 'no-results' );
-          chartInfo.innerHTML = "";
-        }
-        else {
-          // Remove inner elements only for initial loads
-          buoyDiv.getElementsByClassName( 'chart-js-menu' )[0].remove();
-          chartInfo.remove();
-        }
-      }
-    }
-  }
-}
-
 // Convert Array of JSON values to Objects
 export function wadRawDataToChartData( data ) {
   let processed = [];
@@ -572,7 +440,7 @@ function wadTempToolTip( tooltipItem, data ) {
 // Appearance for each datapoint type
 export function generateDataPoints( includes ) {
 	// Arrows
-	let arrowImageOrange = new Image( 20, 20 );
+	let arrowImageOrange = new Image( 28, 28 );
 	arrowImageOrange.src = wad.plugin + "dist/images/arrow-grad-orange@2x.png";
 	let arrowImageBlue = new Image( 28, 28 );
 	arrowImageBlue.src = wad.plugin + "dist/images/arrow-blue-g@2x.png";
@@ -741,3 +609,15 @@ export const panelWrapper = "<div class='card card-primary mb-3'>" +
 		"</div>" +
   "</div>" +
 "</div>";
+
+export const wadGetAspectRatio = ( multiplier = 1 ) => {
+	const sizing = ( window.innerWidth >= 992 ) ? 'desktop' : ( window.innerWidth >= 768 ) ? 'tablet' : ( window.innerWidth >= 450 ) ? 'mobileLandscape' : 'mobilePortrait';
+	const ratios = {
+		desktop: 2 / multiplier,
+		tablet: 2 / multiplier,
+		mobileLandscape: 1.75,
+		mobilePortrait: 1.5,
+	};
+
+	return ratios[sizing];
+}
