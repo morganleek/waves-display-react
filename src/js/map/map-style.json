@@ -1,27 +1,6 @@
 [
 	{
 		"featureType": "all",
-		"elementType": "geometry.fill",
-		"stylers": [
-			{
-				"weight": "2.00"
-			},
-			{
-				"visibility": "simplified"
-			}
-		]
-	},
-	{
-		"featureType": "all",
-		"elementType": "geometry.stroke",
-		"stylers": [
-			{
-				"color": "#9c9c9c"
-			}
-		]
-	},
-	{
-		"featureType": "all",
 		"elementType": "labels.text",
 		"stylers": [
 			{
@@ -30,52 +9,7 @@
 		]
 	},
 	{
-		"featureType": "administrative.locality",
-		"elementType": "all",
-		"stylers": [
-			{
-				"visibility": "on"
-			}
-		]
-	},
-	{
-		"featureType": "landscape.natural.landcover",
-		"elementType": "all",
-		"stylers": [
-			{
-				"visibility": "on"
-			},
-			{
-				"color": "#f1efe8"
-			}
-		]
-	},
-	{
-		"featureType": "poi",
-		"elementType": "all",
-		"stylers": [
-			{
-				"visibility": "off"
-			}
-		]
-	},
-	{
-		"featureType": "road",
-		"elementType": "all",
-		"stylers": [
-			{
-				"saturation": -100
-			},
-			{
-				"lightness": 45
-			},
-			{
-				"visibility": "off"
-			}
-		]
-	},
-	{
-		"featureType": "road.arterial",
+		"featureType": "all",
 		"elementType": "labels.icon",
 		"stylers": [
 			{
@@ -84,23 +18,56 @@
 		]
 	},
 	{
-		"featureType": "transit",
-		"elementType": "all",
+		"featureType": "landscape",
+		"elementType": "geometry.fill",
 		"stylers": [
 			{
-				"visibility": "off"
+				"color": "#f1efe8"
 			}
 		]
 	},
 	{
-		"featureType": "water",
-		"elementType": "all",
+		"featureType": "landscape.man_made",
+		"elementType": "geometry.fill",
 		"stylers": [
 			{
-				"color": "#46bcec"
+				"visibility": "on"
 			},
 			{
+				"gamma": "1.19"
+			}
+		]
+	},
+	{
+		"featureType": "landscape.man_made",
+		"elementType": "geometry.stroke",
+		"stylers": [
+			{
 				"visibility": "on"
+			},
+			{
+				"gamma": "0.00"
+			},
+			{
+				"weight": "2.07"
+			}
+		]
+	},
+	{
+		"featureType": "road.highway",
+		"elementType": "geometry.fill",
+		"stylers": [
+			{
+				"color": "#b2ac83"
+			}
+		]
+	},
+	{
+		"featureType": "road.highway",
+		"elementType": "geometry.stroke",
+		"stylers": [
+			{
+				"color": "#b2ac83"
 			}
 		]
 	},
@@ -109,25 +76,7 @@
 		"elementType": "geometry.fill",
 		"stylers": [
 			{
-				"color": "#a6c6d6"
-			}
-		]
-	},
-	{
-		"featureType": "water",
-		"elementType": "labels.text.fill",
-		"stylers": [
-			{
-				"color": "#070707"
-			}
-		]
-	},
-	{
-		"featureType": "water",
-		"elementType": "labels.text.stroke",
-		"stylers": [
-			{
-				"color": "#ffffff"
+				"color": "#588da8"
 			}
 		]
 	}

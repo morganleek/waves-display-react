@@ -5,6 +5,7 @@ import 'chartjs-adapter-luxon';
 
 import { wadRawDataToChartData, wadGenerateChartData, wadGetAspectRatio } from '../api/chart';
 import { getBuoys, getBuoy } from '../api/buoys';
+import { Memplot } from '../memplot/Memplot';
 
 const classNames = require('classnames');
 
@@ -58,32 +59,6 @@ function timeCallback( tickValue, index, ticks ) {
   return tickValue.split(" ");
 }
 
-const constOptions = {
-  scales: {
-    y: {
-      position: "right"
-      
-    },
-    "y-axis-1": {
-      position: "right"
-      
-    },
-    x: {
-      grid: {
-        borderColor: 'red'
-      }
-    }
-  },
-  plugins: {
-    title: {
-        display: true,
-        text: 'Custom Chart Title'
-    }
-  }
-};
-
-
-
 export class Chart extends Component {
   constructor( props ) {
     super( props );
@@ -96,75 +71,6 @@ export class Chart extends Component {
 
   handleExpandClick() {
     this.setState( { isExpanded: !this.state.isExpanded } );
-    console.log( 'handleExpandClick' );
-
-    // if( buoyWrapper && canvasWrapper ) {
-    //   // Toggle width
-    //   buoyWrapper.classList.toggle('expanded');
-    //   // Remove legends
-    //   const canvasLegend = buoyWrapper.querySelector( '.canvas-legend' );
-    //   if( canvasLegend ) {
-    //     canvasLegend.innerHTML = '';
-    //   }
-      
-    //   // All new charts
-    //   let charts;
-    //   let multiplier = 1; // Adjust height for wider layouts
-    //   if( !e.target.classList.contains( 'expanded' ) ) {
-    //     multiplier = 0.65;
-    //     e.target.classList.add( 'expanded' );
-    //     e.target.innerHTML = '<i class="fa fa-compress" aria-hidden="true"></i> Collapse';
-      
-    //     // Charts
-    //     charts = [
-    //       { hsig: true }, 
-    //       { tp: true }, 
-    //       { sst: true }, 
-    //       { bottomTemp: true },
-    //       { windspeed: true }
-    //     ];
-    //   }
-    //   else {
-    //     e.target.classList.remove( 'expanded' );
-    //     e.target.innerHTML = '<i class="fa fa-expand" aria-hidden="true"></i> Expand';
-
-    //     // Charts
-    //     charts = [{ hsig: true,
-    //       tp: true,
-    //       sst: false, 
-    //       bottomTemp: false 
-    //     }];
-    //   }
-      
-    //   // Clear existing
-    //   canvasWrapper.innerHTML = '';
-    //   for( let i = 0; i < charts.length; i++ ) {
-    //     // Create chart data
-    //     const chartData = wadGenerateChartData( window.myChartData['buoy-' + buoyId], charts[i], multiplier );
-    //     if( chartData.config.data.datasets.length > 0 ) {
-    //       // OG Chart
-    //       if( charts.length == 1 ) {
-    //         // Create heading
-    //         const singleHeading = document.createElement( 'h4' );
-    //         singleHeading.className = "text-center";
-    //         singleHeading.innerHTML = chartData.config.data.datasets[0].label;
-    //         canvasWrapper.appendChild( singleHeading );
-
-    //         // Legends
-    //         wadDrawChartLegend( buoyId, chartData.config );
-    //       }
-    //       // Create canvas
-    //       const singleCanvas = document.createElement( 'canvas' );
-    //       // singleCanvas.className = charts[i];
-    //       canvasWrapper.appendChild( singleCanvas );
-    //       // Context
-    //       const canvasContext = singleCanvas.getContext( '2d' );
-    //       // Draw
-    //       wadDrawChart( chartData.config, canvasContext );
-
-    //     }
-    //   }
-    // }	
   }
 
 	handleCentreClick() {
@@ -207,8 +113,7 @@ export class Chart extends Component {
   
   render() {
     let chartGraph = <p>Loading &hellip;</p>;
-    let chartTable; // , dateRangeLabel;
-		let buttonGroup;
+    let chartTable, buttonGroup, chartBuoyDetails;
     const { data, isExpanded } = this.state;
     const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
     const buoyLabel = this.props.buoyLabel;
@@ -229,11 +134,19 @@ export class Chart extends Component {
           chartGraphTemp.unshift( <Line data={ { labels: data.config.data.labels, datasets: [ datasetClone ] } }  options={ optionsClone } key={ j } /> );
         } );
         chartGraph = chartGraphTemp;
+
+        // Expanded buoy details 
+        chartBuoyDetails = <div className={ classNames( ['buoy-details'] ) }>
+          <div className="buoy-image">Image</div>
+          <div className="buoy-description">Description</div>
+          <Memplot buoyId={ this.props.buoyId } />
+        </div>;
       }
       else {
         // All in one
         chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
       }
+      // console.log( data );
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) }>
         <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
@@ -254,6 +167,7 @@ export class Chart extends Component {
         <div className='card-body'> 
           <div className={ classNames( ['canvas-wrapper', 'loading'] ) }>
 						{ chartGraph }
+            { chartBuoyDetails }
             { chartTable }
           </div>
         </div>
