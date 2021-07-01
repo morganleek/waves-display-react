@@ -12,11 +12,30 @@
 			wp_enqueue_style( 'wad-style' );
 
 			// Register
+
+			// // React
+			wp_deregister_script( 'react' );
+			wp_deregister_script( 'react-dom' );
+			// // if( strpos( $_SERVER['HTTP_HOST'], 'scooter' ) ) {
+			// // 	wp_register_script( 'react', 'https://unpkg.com/react@17/umd/react.development.js', array(), '17.0.2' );
+			// // 	wp_register_script( 'react-dom', 'https://unpkg.com/react-dom@17/umd/react-dom.development.js', array(), '17.0.2' );
+			// // }
+			// // else {
+			wp_register_script( 'react', 'https://unpkg.com/react@17/umd/react.production.min.js', array(), '17.0.2' );
+			wp_register_script( 'react-dom', 'https://unpkg.com/react-dom@17/umd/react-dom.production.min.js', array(), '17.0.2' );
+			// // }
+
+			// Luxon
+			// wp_register_script( 'luxon', 'https://cdn.jsdelivr.net/npm/luxon@1.27.0/build/global/luxon.min.js', array(), '1.27.0' );
+
+			// Chart.js
+			// wp_register_script( 'chart.js', 'https://cdn.jsdelivr.net/npm/chart.js', array( 'luxon' ), '3.4.0' );
+			
 			// If needed // https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js
 			wp_register_script(
 				'wad-scripts', 
 				WAD__PLUGIN_URL . 'dist/js/index.js', 
-				array( 'jquery' ), 
+				array( 'jquery', 'react', 'react-dom' ),
 				WAD__VERSION
 			);
 		
@@ -39,3 +58,16 @@
 	}
 
 	add_action('init', 'wad_header_scripts'); 
+
+	function wad_crossorigin_scipts( $html, $handle ) {
+		switch( $handle ) {
+			case 'react':
+			case 'react-dom':
+			case 'chart.js':
+				$html = str_replace( "></script>", " crossorigin ></script>", $html );
+				break;
+		}
+		return $html;
+	}
+
+	add_filter( 'script_loader_tag', 'wad_crossorigin_scipts', 10, 2 );

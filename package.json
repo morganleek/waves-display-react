@@ -29,7 +29,9 @@
     "litepicker": "^1.5.7",
     "load-google-maps-api": "^2.0.2",
     "markerwithlabel": "^2.0.2",
-    "react-chartjs-2": "^3.0.3"
+    "react": "^17.0.2",
+    "react-chartjs-2": "^3.0.3",
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.13.1",

@@ -89,7 +89,10 @@ export const scripts = () => {
       filename: '[name].js'
     },
     externals: {
-      jquery: 'jQuery'
+      'jquery': 'jQuery',
+      'react': 'React', 
+      'react-dom': 'ReactDOM',
+      // 'chart.js': 'Chart'
     },
     plugins: [
       new MomentLocalesPlugin()

@@ -41,3 +41,17 @@ export function getDriftingBuoys() {
       .then( json => json );
   }
 }
+
+export function getBuoyImage( buoyId ) {
+	if( typeof( wad ) != "undefined" ) {
+    const init = {
+      method: 'POST'
+    }
+    return fetch( wad.ajax + "?action=waf_get_buoy_image_path&buoy_id=" + buoyId, init ) 
+      .then( response => {
+        if( !response.ok ) throw Error( response.statusText );
+        return response.json();
+      } )
+      .then( json => json );
+  }
+}

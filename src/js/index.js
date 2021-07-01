@@ -1,21 +1,10 @@
 // Charts - React.js
 import React, { useState, Component, Fragment } from "react";
 import { render } from "react-dom";
+
 import { Charts } from './chart/Chart';
 import { Map } from './map/Map';
 
-// const classNames = require( 'classnames' );
-// function App() {
-//   return <>
-//     <Map /><Charts />
-//   </>;
-// }
-
-// document.addEventListener( "DOMContentLoaded", function( event ) { 
-//   if( document.getElementsByClassName( 'page-template-wave-display-react' ).length ) {   
-//     render( <App />, document.getElementById( "root" ) );
-//   }
-// } );
 
 export class App extends Component {
 	constructor( props ) {
@@ -52,7 +41,7 @@ export class App extends Component {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function(event) { 
+document.addEventListener( "DOMContentLoaded", function( event ) { 
   if( document.getElementsByClassName('page-template-wave-display-react').length ) {
     render( <App />, document.getElementById( "root" ) );
   }

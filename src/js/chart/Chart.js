@@ -4,7 +4,8 @@ import 'chartjs-adapter-luxon';
 // import { DateTime } from 'luxon'; 
 
 import { wadRawDataToChartData, wadGenerateChartData, wadGetAspectRatio } from '../api/chart';
-import { getBuoys, getBuoy } from '../api/buoys';
+import { getBuoys, getBuoy, getBuoyImage } from '../api/buoys';
+// import { getMemplot } from '../api/memplots';
 import { Memplot } from '../memplot/Memplot';
 
 const classNames = require('classnames');
@@ -24,7 +25,7 @@ export class Charts extends Component {
         buoys: json
       } );
     } );
-  }
+  } 
 
   render() {
     const { buoys } = this.state;
@@ -38,6 +39,8 @@ export class Charts extends Component {
                 buoyLastUpdated={ row.last_update } 
                 buoyLat={ row.lat } 
                 buoyLng={ row.lng }
+                buoyDescription={ row.description }
+                buoyDownloadTest={ row.download_text }
                 updateCenter={ this.props.updateCenter }
                 updateZoom={ this.props.updateZoom }
                 key={ index }
@@ -137,8 +140,8 @@ export class Chart extends Component {
 
         // Expanded buoy details 
         chartBuoyDetails = <div className={ classNames( ['buoy-details'] ) }>
-          <div className="buoy-image">Image</div>
-          <div className="buoy-description">Description</div>
+          <ChartPhoto buoyId={ this.props.buoyId } />
+          <div className="chart-description"><p>{ this.props.buoyDescription }</p></div>
           <Memplot buoyId={ this.props.buoyId } />
         </div>;
       }
@@ -211,5 +214,43 @@ export class ChartTable extends Component {
         <ul>{ lineTableRender }</ul>
       </div>
     );
+  }
+}
+
+// 
+export class ChartPhoto extends Component {
+  constructor( props ) {
+    super( props );
+    
+    this.state = {
+      path: ''
+    }
+  }
+
+  componentDidMount() {
+		if( this.props.buoyId ) {
+			getBuoyImage( this.props.buoyId ).then( json => {	
+			  this.setState( {
+			    path: json.path
+			  } );
+			} );	
+		}
+  }
+
+  render() {
+		const { path } = this.state;
+
+    let content = '';
+		if( path.length == 0 ) {
+		 content = <div className="chart-photo-placeholder"></div>
+		}
+    else {
+      content = <img src={ path } />
+    }
+    return (
+      <div className="chart-image">
+        { content }
+      </div>
+    )
   }
 }

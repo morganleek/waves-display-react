@@ -14,6 +14,7 @@ export class Memplot extends Component {
     
     this.state = {
       data: [],
+			loading: true
     }
   }
 
@@ -21,6 +22,7 @@ export class Memplot extends Component {
 		if( this.props.buoyId ) {
 			getMemplots( this.props.buoyId ).then( json => {
 			  this.setState( {
+					loading: false,
 			    data: json.data
 			  } );
 			} );
@@ -28,30 +30,38 @@ export class Memplot extends Component {
   }
 
   render() {
-		const { data } = this.state;
+		const { data, loading } = this.state;
 		if( this.props.buoyId ) {
-			let content = <p>Loading memplot &hellip;</p>;
-			if( data.length > 0 ) {
-				const lastNItems = data.length - Math.abs( data.length - 5 ); // Last 5 or less items
-				console.log( lastNItems );
-				let memplotsList = [];
-				// const last = data[data.length - 1];
-				// content = <MemplotImage buoyId={ this.props.buoyId } memplotId={ last.id } />
-				for( let i = data.length - lastNItems; i < data.length; i++ ) {
-					memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ data[i].id } key={ i } /> );
+			let content = '';
+			if( loading ) {
+				content = <p>Loading &hellip;</p>;
+			}
+			else {
+				if( data.length > 0 ) {
+					const lastNItems = data.length - Math.abs( data.length - 5 ); // Last 5 or less items
+					
+					let memplotsList = [];
+					// const last = data[data.length - 1];
+					// content = <MemplotImage buoyId={ this.props.buoyId } memplotId={ last.id } />
+					for( let i = data.length - lastNItems; i < data.length; i++ ) {
+						memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ data[i].id } key={ i } /> );
+					}
+					content = memplotsList;
 				}
-				content = memplotsList;
+				else {
+					content = <p>No memplots at this time</p>
+				}
 			}
 
 			return (
-				<div className="memplot">
+				<div className="chart-memplot">
 					{ content }	
 				</div>
 			);
 		}
 
     return (
-      <div className="memplot"><pre>No id set</pre></div>
+      <div className="chart-memplot"><pre>No id set</pre></div>
     );
   }
 }

@@ -323,7 +323,20 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   padding: 20px 10px;
-  .memplot {
+  column-gap: 15px;
+  .chart-memplot,
+  .chart-image,
+  .chart-description {
+    & > * {
+      &:first-child {
+        margin-top: 0.25em;
+      }
+    }
+    p {
+      margin: 0.5em 0;
+    }
+  }
+  .chart-memplot {
     position: relative;
     img {
       max-width: 100%;
@@ -339,6 +352,12 @@
       // &:nth-child(3) { animation-delay: 4s; }
       // &:nth-child(4) { animation-delay: 6s; }
       // &:nth-child(5) { animation-delay: 8s; }
+    }
+  }
+  .chart-image {
+    img {
+      max-width: 100%;
+      height: auto;
     }
   }
 }
