@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline } from '@react-google-maps/api';
+// import { GoogleMap, useLoadScript, MarkerClusterer, Marker, Polyline } from '@react-google-maps/api';
 
 import { getBuoys, getDriftingBuoys } from '../api/buoys';
 import { wadRawDataToChartData } from '../api/chart';
@@ -24,7 +25,10 @@ export class Map extends Component {
 			minLng: 180,
 			maxLng: -180,
 			boundsSet: false,
-			initBoundsSet: false
+			initBoundsSet: false,
+			icon: '',
+			label: '',
+			focus: null
     }
   }
 
@@ -35,6 +39,7 @@ export class Map extends Component {
 			if( json.length > 0 ) {
 				json.forEach( ( element, index ) => {
 					const marker = {
+						buoyId: element.id,
 						label: element.web_display_name,
 						lat: parseFloat( element.lat ),
 						lng: parseFloat( element.lng )
@@ -86,25 +91,42 @@ export class Map extends Component {
   }
 
 	// Marker click event
-	onMarkerClick = ( marker ) => {
+	// onMarkerClick = ( e ) => {
+	// }
+
+	onMapMarkerClick = ( marker ) => {
 		const { ref } = this.state;
 		if( ref ) {
 			const newCenter = { 
-				lat: parseFloat( marker.latLng.lat() ), 
-				lng: parseFloat( marker.latLng.lng() ) 
+				lat: parseFloat( marker.position.lat ), 
+				lng: parseFloat( marker.position.lng ) 
 			};
 			
 			// Pan to and zoom
 			ref.panTo( newCenter );
 			ref.setZoom( 8 );
-			// Offset when map is full width
-			// ref.panBy( window.innerWidth / 4, 0 );
+
+			// Update Chart list position
+			this.props.updateFocus( marker.buoyId );
 		}
 	}
 
 	onLoad = ( ref ) => {
-		this.setState( { ref: ref } );
+		const icon = {
+			url: wad.plugin + "dist/images/marker@2x.png",
+			labelOrigin: new window.google.maps.Point(0, 24),
+			scaledSize: new window.google.maps.Size(14,14),
+			anchor: new window.google.maps.Point(7,7)
+		};
+
+		this.setState( { icon: icon, ref: ref } );
 	}
+	// onLoad = () => React.useCallback( function callback( map ) {
+  //   // const bounds = new window.google.maps.LatLngBounds();
+  //   // map.fitBounds(bounds);
+  //   // setMap(map)
+	// 	this.setState( { ref: map } );
+  // }, [] )
 
 	onBoundsChanged = ( ) => {
 		this.setBounds( );
@@ -129,14 +151,18 @@ export class Map extends Component {
 
   render() {
 		const { center, zoom } = this.props;
-		const { markers, polylines } = this.state;
+		const { markers, polylines, icon } = this.state;
+
+		
+
+		// const icon = wad.plugin + "dist/images/marker@2x.png";
 
 		let cluster;
 		if( markers ) {
 			cluster = <MarkerClusterer gridSize={ 30 } maxZoom={ 7 }>
 				{ ( clusterer ) => 
 					markers.map( ( marker, i ) => (
-						<Marker position={ { lat: marker.lat, lng: marker.lng } } label={ marker.label } key={ i } onClick={ this.onMarkerClick } clusterer={ clusterer } />
+						<MapMarker buoyId={ marker.buoyId } icon={ icon } position={ { lat: marker.lat, lng: marker.lng } } label={ { text: marker.label, fontSize: '13px' } } key={ i } clusterer={ clusterer } markerFocus={ this.onMapMarkerClick } />
 					) )
 				}
 			</MarkerClusterer>
@@ -167,4 +193,16 @@ export class Map extends Component {
 			</div>
     )
   }
+}
+
+const MapMarker = ( props ) => {
+	const { buoyId } = props;
+
+	const onMarkerClick = ( e ) => {
+		props.markerFocus( { buoyId: props.buoyId, position: props.position } );
+	}
+
+	return (
+		<Marker onClick={ onMarkerClick } { ...props } />
+	);
 }

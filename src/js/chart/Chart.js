@@ -28,6 +28,15 @@ export class Charts extends Component {
     } );
   } 
 
+  componentDidUpdate( prevProps ) {
+    const { buoyFocus } = this.props;
+    if( buoyFocus != prevProps.buoyFocus ) {
+      if( document.querySelector('[data-buoy-id="' + buoyFocus + '"]') ) {
+        document.querySelector('[data-buoy-id="' + buoyFocus + '"]').scrollIntoView( { block: "start" } );
+      }
+    }
+  }
+
   render() {
     const { buoys } = this.state;
     let chartsLoopRender;
@@ -130,9 +139,9 @@ export class Chart extends Component {
     this.setState( { downloadPath: '' } );
   }
   
-  testEvent() {
-    console.log( 'test event' );
-  }
+  // testEvent() {
+  //   console.log( 'test event' );
+  // }
   
   componentDidMount() {
     getBuoy( this.props.buoyId ).then( json => {
@@ -191,7 +200,7 @@ export class Chart extends Component {
 
 
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
-			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) }>
+			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) } >
         <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleCentreClick() }><i className={ classNames( ['fa'], ['fa-crosshairs'] ) }></i> Centre</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>
@@ -225,7 +234,7 @@ export class Chart extends Component {
     }
 
     return (
-      <div className={ classNames( ['card', 'card-primary', 'mb-3'], { expanded: isExpanded } ) }>
+      <div className={ classNames( ['card', 'card-primary', 'mb-3'], { expanded: isExpanded } ) } data-buoy-id={ this.props.buoyId } >
         { chartModal }
         <div className={ classNames( ['card-header', 'clearfix'] ) }>
           <h6 className='pull-left'>{ buoyLabel }</h6>
