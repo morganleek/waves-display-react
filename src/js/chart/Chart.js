@@ -74,6 +74,9 @@ export class Chart extends Component {
       needsUpdating: false,
       downloadPath: ''
 		}
+
+    this.handleModalClose = this.handleModalClose.bind( this );
+    this.handleDownloadClick = this.handleDownloadClick.bind( this );
   }
 
   handleExpandClick() {
@@ -116,6 +119,20 @@ export class Chart extends Component {
       }      
     } );
 	}
+
+  handleDownloadClick() {
+    const { downloadPath } = this.state;
+    window.location = downloadPath;
+    this.setState( { downloadPath: '' } );
+  }
+
+  handleModalClose() {
+    this.setState( { downloadPath: '' } );
+  }
+  
+  testEvent() {
+    console.log( 'test event' );
+  }
   
   componentDidMount() {
     getBuoy( this.props.buoyId ).then( json => {
@@ -134,10 +151,11 @@ export class Chart extends Component {
     let chartGraph = <p>Loading &hellip;</p>;
     let chartModal, chartTable, buttonGroup, chartBuoyDetails;
     const { data, isExpanded, dateRange, needsUpdating, downloadPath } = this.state;
+    const [ startDate, endDate ] = dateRange;
     const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
     const buoyLabel = this.props.buoyLabel;
     
-    if( dateRange[0] && dateRange[1] && needsUpdating ) {
+    if( startDate && endDate && needsUpdating ) {
       this.setState( { needsUpdating: false } );
       this.handleDateChanged();
     }
@@ -163,12 +181,11 @@ export class Chart extends Component {
         chartBuoyDetails = <div className={ classNames( ['buoy-details'] ) }>
           <ChartPhoto buoyId={ this.props.buoyId } />
           <div className="chart-description"><p>{ this.props.buoyDescription }</p></div>
-          <Memplot buoyId={ this.props.buoyId } />
+          <Memplot buoyId={ this.props.buoyId } startDate={ startDate } endDate={ endDate } />
         </div>;
       }
       else {
         // All in one
-
         chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
       }
 
@@ -180,8 +197,8 @@ export class Chart extends Component {
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>
 				<DatePicker
           selectsRange={ true }
-          startDate={ dateRange[0] }
-          endDate={ dateRange[1] }
+          startDate={ startDate }
+          endDate={ endDate }
           onChange={ ( update ) => {
             this.setState( { dateRange: update } );
             if( update[0] && update[1] ) {
@@ -193,13 +210,17 @@ export class Chart extends Component {
         />
 			</div>;
 
+
       if( downloadPath.length > 0 ) {
-        console.log( data );
+        const ref = React.createRef();
         chartModal = <ChartDownloadModal 
-          license={ this.props.buoyDownloadText }
-          link={ downloadPath } 
           title="Terms and Conditions"
+          license={ this.props.buoyDownloadText }
+          close={ this.handleModalClose }
+          download={ this.handleDownloadClick }
+          ref={ ref }
         />;
+        
       }
     }
 
@@ -222,33 +243,42 @@ export class Chart extends Component {
   }
 }
 
+// const ChartDownloadTrigger = forwardRef( ( props, ref ) => (
+//   <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }>
+//     <i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data
+//   </button>
+// ) );
+
 const ChartDatePicker = forwardRef( ( { value, onClick }, ref ) => (
   <button className={ classNames( ['btn', 'btn-outline-secondary', 'btn-datepicker' ] ) } onClick={ onClick } ref={ ref }>
     <i className={ classNames( ['fa'], ['fa-calendar'] ) }></i> { value } <i className={ classNames( ['fa'], ['fa-caret-down'] ) }></i>
   </button>
 ) );
 
-const ChartDownloadModal = ( props ) => {
-  return (
-    <div className={ classNames( 'modal', 'fade', 'show' ) } id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" aria-hidden="true" >
-      <div className={ classNames( 'modal-dialog' ) }>
-        <div className={ classNames( 'modal-content' ) }>
-          <div className={ classNames( 'modal-header' ) }>
-            <h5 className={ classNames( 'modal-title' ) } id="chartModalLabel">{ props.title }</h5>
-            <button type="button" className={ classNames( 'btn-close' ) } data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div className={ classNames( 'modal-body' ) }>
-            <p>{ props.license }</p>
-          </div>
-          <div className={ classNames( 'modal-footer' ) }>
-            <button type="button" className={ classNames( 'btn' , 'btn-secondary', 'btn-cancel' ) } data-bs-dismiss="modal">Close</button>
-            <button type="button" className={ classNames( 'btn', 'btn-primary', 'btn-download' ) } onClick={ window.location = props.link }>Download</button>
-          </div>
+// const ChartDownloadModal = ( props ) => <h1>Hello world!</h1>;
+// function ChartDownloadModal ( props ) {
+//   return <h1>{ props.license }</h1>;
+// } 
+
+const ChartDownloadModal = ( { close, download, title, license } ) => (
+  <div className={ classNames( 'modal', 'fade', 'show' ) } id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" >
+    <div className={ classNames( 'modal-dialog' ) }>
+      <div className={ classNames( 'modal-content' ) }>
+        <div className={ classNames( 'modal-header' ) }>
+          <h5 className={ classNames( 'modal-title' ) } id="chartModalLabel">{ title }</h5>
+          <button type="button" className={ classNames( 'btn-close' ) } aria-label="Close" onClick={ close } ></button>
+        </div>
+        <div className={ classNames( 'modal-body' ) }>
+          <p>{ license }</p>
+        </div>
+        <div className={ classNames( 'modal-footer' ) }>
+          <button type="button" className={ classNames( 'btn' , 'btn-secondary', 'btn-cancel' ) } onClick={ close } >Close</button>
+          <button type="button" className={ classNames( 'btn', 'btn-primary', 'btn-download' ) } onClick={ download } >Download</button>
         </div>
       </div>
     </div>
-  );
-}
+  </div>
+);
 
 export class ChartTable extends Component {
   constructor( props ) {

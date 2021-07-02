@@ -19,15 +19,30 @@ export class Memplot extends Component {
   }
 
   componentDidMount() {
+		this.loadMemplots();
+  }
+
+	componentDidUpdate( prevProps ) {
+		const { startDate, endDate } = this.props;
+		if( startDate && endDate && prevProps.endDate == null ) {
+			// Previous date is always null before a change
+			this.loadMemplots();
+		}
+	}
+
+	loadMemplots() {
 		if( this.props.buoyId ) {
-			getMemplots( this.props.buoyId ).then( json => {
+			const { startDate, endDate } = this.props;
+			
+			getMemplots( this.props.buoyId, startDate.getTime() / 1000, endDate.getTime() / 1000 ).then( json => {
 			  this.setState( {
 					loading: false,
 			    data: json.data
 			  } );
 			} );
 		}
-  }
+	}
+
 
   render() {
 		const { data, loading } = this.state;
@@ -44,12 +59,13 @@ export class Memplot extends Component {
 					// const last = data[data.length - 1];
 					// content = <MemplotImage buoyId={ this.props.buoyId } memplotId={ last.id } />
 					for( let i = data.length - lastNItems; i < data.length; i++ ) {
+						// console.log( data[i].id );
 						memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ data[i].id } key={ i } /> );
 					}
 					content = memplotsList;
 				}
 				else {
-					content = <p>No memplots at this time</p>
+					content = <p>No memplots for this time period</p>
 				}
 			}
 
@@ -77,6 +93,18 @@ export class MemplotImage extends Component {
   }
 
   componentDidMount() {
+		this.loadMemplot();
+  }
+
+	componentDidUpdate( prevProps ) {
+		const { memplotId } = this.props;
+		if( prevProps.memplotId != memplotId ) {
+			this.loadMemplot();
+			console.log( 'change' );
+		}
+	}
+
+	loadMemplot() {
 		if( this.props.buoyId && this.props.memplotId ) {
 			getMemplot( this.props.buoyId, this.props.memplotId ).then( json => {	
 			  this.setState( {
@@ -84,7 +112,7 @@ export class MemplotImage extends Component {
 			  } );
 			} );	
 		}
-  }
+	}
 
   render() {
 		const { path } = this.state;
