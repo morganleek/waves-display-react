@@ -39,7 +39,7 @@ export class App extends Component {
 
   render() {
     const { center, zoom, focus } = this.state;
-    console.log( focus );
+    
     return <>
       <Map center={ center } zoom={ zoom } updateFocus={ this.updateFocus } />
       <Charts updateCenter={ this.updateMapCenter } 
