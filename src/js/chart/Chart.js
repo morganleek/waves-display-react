@@ -1,10 +1,11 @@
-import React, { Component, Fragment } from "react";
+import React, { Component, Fragment, forwardRef, useState } from "react";
 import { Line } from 'react-chartjs-2';
+import DatePicker from "react-datepicker";
 import 'chartjs-adapter-luxon';
 // import { DateTime } from 'luxon'; 
 
 import { wadRawDataToChartData, wadGenerateChartData, wadGetAspectRatio } from '../api/chart';
-import { getBuoys, getBuoy, getBuoyImage } from '../api/buoys';
+import { getBuoys, getBuoy, getBuoyByDate, getBuoyImage } from '../api/buoys';
 // import { getMemplot } from '../api/memplots';
 import { Memplot } from '../memplot/Memplot';
 
@@ -40,7 +41,7 @@ export class Charts extends Component {
                 buoyLat={ row.lat } 
                 buoyLng={ row.lng }
                 buoyDescription={ row.description }
-                buoyDownloadTest={ row.download_text }
+                buoyDownloadText={ row.download_text }
                 updateCenter={ this.props.updateCenter }
                 updateZoom={ this.props.updateZoom }
                 key={ index }
@@ -68,7 +69,10 @@ export class Chart extends Component {
     
     this.state = {
       data: [],
-      isExpanded: false
+      isExpanded: false,
+      dateRange: [null, null],
+      needsUpdating: false,
+      downloadPath: ''
 		}
   }
 
@@ -92,34 +96,51 @@ export class Chart extends Component {
       const start = parseInt( timeRange[0] ) / 1000;
       const end = parseInt( timeRange[1] ) / 1000;
       const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=" + start + "&end=" + end;
-      window.location = wad.ajax + path;
+      this.setState( { downloadPath: wad.ajax + path } );
     }
     else {
       console.log( 'No time range specified' );
     }
 	}
 
-	handleDatePickerClick() {
-		console.log('date picker');
+	handleDateChanged() {
+    const { dateRange } = this.state;
+    
+		getBuoyByDate( this.props.buoyId, dateRange[0].getTime() / 1000, dateRange[1].getTime() / 1000 ).then( json => {
+      if( json.success == 1 ) {
+        const data = wadGenerateChartData( wadRawDataToChartData( json.data ) );
+        this.setState( {
+          data: data,
+          dateRange: [ new Date( parseInt( data.timeRange[0] ) ), new Date( parseInt( data.timeRange[1] ) ) ]
+        } );
+      }      
+    } );
 	}
   
   componentDidMount() {
     getBuoy( this.props.buoyId ).then( json => {
       if( json.success == 1 ) {
-
+        const data = wadGenerateChartData( wadRawDataToChartData( json.data ) );
         this.setState( {
-          data: wadGenerateChartData( wadRawDataToChartData( json.data ) )
+          data: data,
+          dateRange: [ new Date( parseInt( data.timeRange[0] ) ), new Date( parseInt( data.timeRange[1] ) ) ],
         } );
+        // const [startDate, setStartDate] = useState( 0 );
       }      
     } );
   }
   
   render() {
     let chartGraph = <p>Loading &hellip;</p>;
-    let chartTable, buttonGroup, chartBuoyDetails;
-    const { data, isExpanded } = this.state;
+    let chartModal, chartTable, buttonGroup, chartBuoyDetails;
+    const { data, isExpanded, dateRange, needsUpdating, downloadPath } = this.state;
     const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
     const buoyLabel = this.props.buoyLabel;
+    
+    if( dateRange[0] && dateRange[1] && needsUpdating ) {
+      this.setState( { needsUpdating: false } );
+      this.handleDateChanged();
+    }
 		
     if( Object.keys( data ).length > 0 ) {
       if( isExpanded ) {
@@ -147,28 +168,50 @@ export class Chart extends Component {
       }
       else {
         // All in one
+
         chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
       }
-      // console.log( data );
+
+
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) }>
         <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleCentreClick() }><i className={ classNames( ['fa'], ['fa-crosshairs'] ) }></i> Centre</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>
-				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleDatePickerClick() }>
-					<i className={ classNames( ['fa'], ['fa-calendar'] ) }></i> { data.timeLabel } <i className={ classNames( ['fa'], ['fa-caret-down'] ) }></i>
-				</button>
+				<DatePicker
+          selectsRange={ true }
+          startDate={ dateRange[0] }
+          endDate={ dateRange[1] }
+          onChange={ ( update ) => {
+            this.setState( { dateRange: update } );
+            if( update[0] && update[1] ) {
+              this.setState( { needsUpdating: true } );
+            }
+          } }
+          customInput={ <ChartDatePicker /> }
+          dateFormat="dd/MM/yyyy"
+        />
 			</div>;
+
+      if( downloadPath.length > 0 ) {
+        console.log( data );
+        chartModal = <ChartDownloadModal 
+          license={ this.props.buoyDownloadText }
+          link={ downloadPath } 
+          title="Terms and Conditions"
+        />;
+      }
     }
 
     return (
       <div className={ classNames( ['card', 'card-primary', 'mb-3'], { expanded: isExpanded } ) }>
+        { chartModal }
         <div className={ classNames( ['card-header', 'clearfix'] ) }>
           <h6 className='pull-left'>{ buoyLabel }</h6>
 					{ buttonGroup }
         </div>
         <div className='card-body'> 
-          <div className={ classNames( ['canvas-wrapper', 'loading'] ) }>
+          <div className={ classNames( ['canvas-wrapper', { 'is-updating': needsUpdating } ] ) }>
 						{ chartGraph }
             { chartBuoyDetails }
             { chartTable }
@@ -179,6 +222,33 @@ export class Chart extends Component {
   }
 }
 
+const ChartDatePicker = forwardRef( ( { value, onClick }, ref ) => (
+  <button className={ classNames( ['btn', 'btn-outline-secondary', 'btn-datepicker' ] ) } onClick={ onClick } ref={ ref }>
+    <i className={ classNames( ['fa'], ['fa-calendar'] ) }></i> { value } <i className={ classNames( ['fa'], ['fa-caret-down'] ) }></i>
+  </button>
+) );
+
+const ChartDownloadModal = ( props ) => {
+  return (
+    <div className={ classNames( 'modal', 'fade', 'show' ) } id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" aria-hidden="true" >
+      <div className={ classNames( 'modal-dialog' ) }>
+        <div className={ classNames( 'modal-content' ) }>
+          <div className={ classNames( 'modal-header' ) }>
+            <h5 className={ classNames( 'modal-title' ) } id="chartModalLabel">{ props.title }</h5>
+            <button type="button" className={ classNames( 'btn-close' ) } data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div className={ classNames( 'modal-body' ) }>
+            <p>{ props.license }</p>
+          </div>
+          <div className={ classNames( 'modal-footer' ) }>
+            <button type="button" className={ classNames( 'btn' , 'btn-secondary', 'btn-cancel' ) } data-bs-dismiss="modal">Close</button>
+            <button type="button" className={ classNames( 'btn', 'btn-primary', 'btn-download' ) } onClick={ window.location = props.link }>Download</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export class ChartTable extends Component {
   constructor( props ) {
@@ -196,9 +266,6 @@ export class ChartTable extends Component {
       // Last value
       const last = ( value.data.length > 0 ) ? value.data[ value.data.length - 1 ].y : 0;
       // Last Updates
-      // this.props.lastUpdated;
-      // const lastUpdate = moment( this.props.lastUpdated * 1000 );
-      // const queryTime = moment( window.buoysData.get( parseInt( buoyId ) ).now * 1000 );
       if( last > 0 ) {
         lineTableRender.push( <li key={ key }>
           { value.description }

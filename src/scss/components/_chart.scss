@@ -1,5 +1,5 @@
 // Charts.js
-// @import '../../node_modules/chart.js/dist/Chart';
+@import '../../node_modules/react-datepicker/src/stylesheets/datepicker';
 
 .chart-surround {
   margin: 0 -25px;
@@ -113,27 +113,6 @@
   }
 }
 
-// .chart-js-layout {
-.chart-js-menu {
-  // display: flex;
-  // justify-content: flex-end;
-  // margin-bottom: 0.7em;
-  &.btn-group {
-    & > button.btn {
-      &.calendars-trigger {
-        &:not(:last-child) {
-          border-top-right-radius: 2px;
-          border-bottom-right-radius: 2px;
-        }
-      }
-      span {
-        pointer-events: none;
-      }
-    }
-  }
-}
-// }
-
 .card {
   .btn-group {
     & > button.btn {
@@ -169,6 +148,16 @@
         background: #f0f0f0;
         color: #111;
         font-size: 1.2rem;
+        &.btn-datepicker {
+          min-width: 190px;
+          text-align: left;
+          .fa.fa-caret-down {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translate(0, -50%);
+          }
+        }
       }
     }
     .card-body {
@@ -237,6 +226,11 @@
       .canvas-wrapper {
         position: relative;
         transition: opacity 0.5s;
+        &.is-updating {
+          canvas {
+            opacity: 0.5;
+          }
+        }
         body:not(.page-template-wave-display-react) & {
           &.no-results,
           &.loading {
@@ -251,6 +245,7 @@
             }
             canvas {
               min-height: 35vh;
+              transition: opacity 0.3s;
               @media (min-width: 768px) { 
                 opacity: 0.5;
                 width: 100%;
@@ -360,4 +355,8 @@
       height: auto;
     }
   }
+}
+
+#chartModal {
+  display: block;
 }

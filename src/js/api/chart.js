@@ -189,6 +189,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 				aspectRatio: wadGetAspectRatio( multiplier ),
 				hoverMode: 'index',
 				stacked: false,
+				// animation: false,
 				plugins: {
 					title: {
 						display: true,
