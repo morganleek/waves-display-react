@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline, Polygon } from '@react-google-maps/api';
 // import { GoogleMap, useLoadScript, MarkerClusterer, Marker, Polyline } from '@react-google-maps/api';
 
 import { getBuoys, getDriftingBuoys } from '../api/buoys';
@@ -20,6 +20,7 @@ export class Map extends Component {
 			ref: null,
 			markers: [],
 			polylines: [],
+			polylineMarkers: {},
 			minLat: 90,
 			maxLat: -90,
 			minLng: 180,
@@ -27,6 +28,7 @@ export class Map extends Component {
 			boundsSet: false,
 			initBoundsSet: false,
 			icon: '',
+			labelIcon: '',
 			label: '',
 			focus: null
     }
@@ -38,13 +40,16 @@ export class Map extends Component {
     getBuoys().then( json => {
 			if( json.length > 0 ) {
 				json.forEach( ( element, index ) => {
-					const marker = {
-						buoyId: element.id,
-						label: element.web_display_name,
-						lat: parseFloat( element.lat ),
-						lng: parseFloat( element.lng )
-					};
-					this.setState( { markers: [...this.state.markers, marker] } );
+					if( parseInt( element.drifting ) == 0 ) {
+						let marker = {
+							buoyId: element.id,
+							label: element.web_display_name,
+							lat: parseFloat( element.lat ),
+							lng: parseFloat( element.lng )
+						};
+
+						this.setState( { markers: [...this.state.markers, marker] } );
+					}
 				} );
 			}
 			// Bounds
@@ -63,26 +68,50 @@ export class Map extends Component {
 			if( json.length > 0 ) {
 				// let driftingMap = json.map( ( row, index ) => {
 				json.forEach( ( element, index ) => {
+
 					const processed = wadRawDataToChartData( element.data );
 					
 					let path = [];
-					let times = [];
+					let pathTimes = [];
 					
 					for( let j = 0; j < processed.length; j++ ) {
 						if( !isNaN( parseFloat( processed[j]["Latitude (deg)"] ) ) && !isNaN( parseFloat( processed[j]["Longitude (deg) "] ) ) ) {
 							path.push( { lat: parseFloat( processed[j]["Latitude (deg)"] ), lng: parseFloat( processed[j]["Longitude (deg) "] ) } );
-							times.push( parseInt( processed[j]['Time (UNIX/UTC)'] ) );
+							pathTimes.push( {
+								time: parseInt( processed[j]['Time (UNIX/UTC)'] ),
+								lat: parseFloat( processed[j]["Latitude (deg)"] ), 
+								lng: parseFloat( processed[j]["Longitude (deg) "] )
+							} );
 						}
 					}
 
-					const polyline = <Polyline key={ this.state.polylines.length } options={ {
-						path: path,
-						geodesic: true,
-						strokeColor: "#FF0000",
-						strokeOpacity: 1.0,
-						strokeWeight: 2,
-					} } />;
-					this.setState( { polylines: [...this.state.polylines, polyline] } );
+					if( path.length > 0 ) {
+						const polyline = <MapPolyline 
+							buoyId={ parseInt( processed[0]["buoy_id"] ) } 
+							key={ this.state.polylines.length } 
+							polylineFocus={ this.onMapPolylineClick }
+							pathTimes={ pathTimes }
+							options={ {
+								path: path,
+								geodesic: true,
+								strokeColor: "#FF0000",
+								strokeOpacity: 1.0,
+								strokeWeight: 2,
+								clickable: true
+							} 
+						} />;
+						this.setState( { polylines: [...this.state.polylines, polyline] } );
+
+						// Add Marker
+						let marker = {
+							buoyId: element.id,
+							label: element.web_display_name,
+							lat: path[0].lat, // First path lat/lng
+							lng: path[0].lng // First path lat/lng
+						};
+						
+						this.setState( { markers: [...this.state.markers, marker] } );
+					}
 				} );
 
 				// See 'waves-display' for labels
@@ -93,6 +122,37 @@ export class Map extends Component {
 	// Marker click event
 	// onMarkerClick = ( e ) => {
 	// }
+
+	onMapPolylineClick = ( polyline ) => {
+		const { ref, polylineMarkers, labelIcon } = this.state;
+		const { buoyId, pathTimes } = polyline;
+
+		if( ref ) {
+			if( polylineMarkers[buoyId] != undefined ) {
+				// Remove
+				delete( polylineMarkers[buoyId] );
+			}
+			else {
+				// Setup empty array
+				const newMarkers = [];
+				// const pathTimes = pathTimes.pop();
+				// const lastTime = times.pop();
+				// Fill with every 24th value
+				for( let n = 0; n < pathTimes.length; n += 24 ) { // 
+					const labelDate = new Date( pathTimes[n].time * 1000).toDateString();
+					const labelTime = new Date( pathTimes[n].time * 1000).toTimeString().replace(/\s\(.*/, '');
+					
+					const marker = <Marker position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } icon={ labelIcon } label={ { text: labelDate + ' ' + labelTime, fontSize: '11px' } } key={ n + 1000 } />
+					newMarkers.push( marker );
+				}
+
+				const updateMarkers = Object.assign( {}, polylineMarkers );
+				updateMarkers[buoyId] = newMarkers;
+
+				this.setState( { polylineMarkers: updateMarkers } ); 
+			}
+		}
+	}
 
 	onMapMarkerClick = ( marker ) => {
 		const { ref } = this.state;
@@ -119,7 +179,14 @@ export class Map extends Component {
 			anchor: new window.google.maps.Point(7,7)
 		};
 
-		this.setState( { icon: icon, ref: ref } );
+		const labelIcon = {
+			url: wad.plugin + "dist/images/label-marker@2x.png",
+			labelOrigin: new window.google.maps.Point(0, 20),
+			scaledSize: new window.google.maps.Size(8,8),
+			anchor: new window.google.maps.Point(4,4)
+		}
+
+		this.setState( { icon: icon, labelIcon: labelIcon, ref: ref } );
 	}
 	// onLoad = () => React.useCallback( function callback( map ) {
   //   // const bounds = new window.google.maps.LatLngBounds();
@@ -151,11 +218,17 @@ export class Map extends Component {
 
   render() {
 		const { center, zoom } = this.props;
-		const { markers, polylines, icon } = this.state;
+		const { markers, polylines, polylineMarkers, icon } = this.state;
 
+		let polylineLabels = [];
+		if( Object.keys( polylineMarkers ).length !== 0 ) {
+			// console.log( polylineMarkers );
+			for ( const [key, value] of Object.entries( polylineMarkers ) ) {
+				// console.log(`${key}: ${value}`);
+				polylineLabels = [ ...polylineLabels, ...value ];
+			}
+		}
 		
-
-		// const icon = wad.plugin + "dist/images/marker@2x.png";
 
 		let cluster;
 		if( markers ) {
@@ -182,7 +255,7 @@ export class Map extends Component {
 					onLoad={ this.onLoad }
 					onBoundsChanged={ this.onBoundsChanged }
 				>
-					<>{ cluster }{ polylines }</>
+					<>{ cluster }{ polylines }{ polylineLabels }</>
 				</GoogleMap>
 			</LoadScript>;
 		}
@@ -196,8 +269,6 @@ export class Map extends Component {
 }
 
 const MapMarker = ( props ) => {
-	const { buoyId } = props;
-
 	const onMarkerClick = ( e ) => {
 		props.markerFocus( { buoyId: props.buoyId, position: props.position } );
 	}
@@ -205,4 +276,14 @@ const MapMarker = ( props ) => {
 	return (
 		<Marker onClick={ onMarkerClick } { ...props } />
 	);
+}
+
+const MapPolyline = ( props ) => {
+	const onPolylineClick = ( e ) => {
+		props.polylineFocus( { buoyId: props.buoyId, pathTimes: props.pathTimes } );
+	}
+
+	return (
+		<Polyline onClick={ onPolylineClick } { ...props } />
+	)
 }
