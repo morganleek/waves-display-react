@@ -61,27 +61,6 @@ body {
 	&.page-template-wave-display-react {
 		min-height: calc(100vh - var(--headers-height));
 		#root {
-			// max-width: 100%;
-			// @media (min-width: 768px) { 
-			// 	display: grid;
-			// 	grid-template-columns: 1fr 1fr;
-			// 	height: calc(100vh - var(--headers-height));
-			// }
-			// .maps {
-			// 	min-height: 50vh;
-			// 	@media (min-width: 768px) { 
-			// 		min-height: 0;
-			// 	}
-			// }
-			// .maps, .charts {
-			// 	@media (min-width: 768px) { 
-			// 		height: calc(100vh - var(--headers-height));
-			// 	}
-			// }
-			// .charts {
-			// 	overflow: scroll;
-			// 	padding: 10px;
-			// }
 			max-width: 100%;
 			@media (min-width: 768px) { 
 				display: grid;
@@ -91,6 +70,7 @@ body {
 			}
 			.maps {
 				min-height: 50vh;
+				height: 50vh;
 				@media (min-width: 768px) { 
 					min-height: 0;
 				}
@@ -107,9 +87,10 @@ body {
 			}
 			.charts {
 				overflow: scroll;
-				padding: 10px;
+				padding: 10px 5px;
 				@media (min-width: 768px) { 
-					grid-area: 1 / 1 / 2 / 3;
+				padding: 10px;
+				grid-area: 1 / 1 / 2 / 3;
 					& > div > .card {
 						margin-left: 50%;
 						transition: all 0.3s;

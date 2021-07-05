@@ -128,15 +128,26 @@
     box-shadow: 0 0 18px rgba(0, 0, 0, 0.1);
     .card-header {
       background: $header;
-      padding: 0.6rem ​1rem;
+      padding: 0.6rem ;
+      @media (min-width: 768px) { 
+        padding: 0.6rem 1rem;
+      }
       h6 {
         font-size: 1.2rem;
-        margin: 0.5em 0;
+        margin: 0 0 0.5em;
         line-height: 1.25em;
         font-weight: 500;
         color: #fff;
+        @media (min-width: 768px) { 
+          margin: 0.5em 0;
+        }
         span {
           opacity: 0 !important;
+        }
+      }
+      & > .btn-group {
+        @media (max-width: 767px) { 
+          flex-wrap: wrap;
         }
       }
       time {

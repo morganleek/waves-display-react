@@ -130,19 +130,26 @@ export class Map extends Component {
 		if( ref ) {
 			if( polylineMarkers[buoyId] != undefined ) {
 				// Remove
-				delete( polylineMarkers[buoyId] );
+				let newPolylineMarkers = Object.assign( {}, polylineMarkers );
+				delete( newPolylineMarkers[buoyId] );
+				this.setState( { polylineMarkers: newPolylineMarkers } );
 			}
 			else {
 				// Setup empty array
 				const newMarkers = [];
-				// const pathTimes = pathTimes.pop();
-				// const lastTime = times.pop();
+
 				// Fill with every 24th value
 				for( let n = 0; n < pathTimes.length; n += 24 ) { // 
 					const labelDate = new Date( pathTimes[n].time * 1000).toDateString();
 					const labelTime = new Date( pathTimes[n].time * 1000).toTimeString().replace(/\s\(.*/, '');
 					
-					const marker = <Marker position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } icon={ labelIcon } label={ { text: labelDate + ' ' + labelTime, fontSize: '11px' } } key={ n + 1000 } />
+					const marker = <Marker 
+						position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } 
+						icon={ labelIcon } 
+						label={ { text: labelDate + ' ' + labelTime, fontSize: '11px' } } 
+						key={ n + 1000 } 
+						clickable={ false }
+					/>
 					newMarkers.push( marker );
 				}
 
