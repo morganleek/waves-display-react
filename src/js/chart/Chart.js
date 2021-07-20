@@ -1,6 +1,7 @@
 import React, { Component, Fragment, forwardRef, useState } from "react";
 import { Line } from 'react-chartjs-2';
 import DatePicker from "react-datepicker";
+import { DateTime } from 'luxon'; 
 import 'chartjs-adapter-luxon';
 // import { DateTime } from 'luxon'; 
 
@@ -301,11 +302,14 @@ export class ChartTable extends Component {
   render( ) {
     // Iterate through chart table items
     let lineTableRender = [];
+    let dateTime = '';
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
       // Last value
       const last = ( value.data.length > 0 ) ? value.data[ value.data.length - 1 ].y : 0;
       // Last Updates
       if( last > 0 ) {
+        const time = DateTime.fromMillis( parseInt( value.data[ value.data.length - 1 ].x ) );
+		    dateTime = ' - ' + time.toFormat( 'dd LLL y h:mma' );
         lineTableRender.push( <li key={ key }>
           { value.description }
           <span>{ last }</span>
@@ -316,7 +320,7 @@ export class ChartTable extends Component {
     return (
       <div className={ classNames( "chart-info", { "expanded": this.state.active } ) }
         onClick={ () => this.setState( { active: !this.state.active } ) } >
-        <h5 className='latest-observations'>Latest Observations</h5>
+        <h5 className='latest-observations'>Latest Observations { dateTime }</h5>
         <ul>{ lineTableRender }</ul>
       </div>
     );
