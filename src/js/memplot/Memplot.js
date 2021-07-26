@@ -65,7 +65,7 @@ export class Memplot extends Component {
 					content = memplotsList;
 				}
 				else {
-					content = <p>No memplots for this time period</p>
+					content = <p><em>No spectral data available for this time period</em></p>
 				}
 			}
 

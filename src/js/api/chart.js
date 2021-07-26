@@ -31,6 +31,11 @@ function reverseRotation( rotation ) {
 	return ( reversed < 0 ) ? 0 : ( reversed + 180 ) % 360;
 }
 
+// Wind speed to knots
+function windSpeedToKnots( speed ) {
+	return Math.floor( speed / 1.944 * 1000 ) / 1000;
+}
+
 // Get mod for max number of elements
 function wadGetMod( max, length ) {
 	const mod = Math.ceil( length / max );
@@ -99,7 +104,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 			if( wave["QF_bott_temp"] == "1") {
 				dataPoints.bottomTemp.data.push( { x: time, y: parseFloatOr( wave["Bottom Temp (degC)"], 0.0 ) } );
 			}
-			dataPoints.windspeed.data.push( { x: time, y: parseFloatOr( wave["WindSpeed (m/s)"], 0.0 ) } );
+			dataPoints.windspeed.data.push( { x: time, y: windSpeedToKnots( parseFloatOr( wave["WindSpeed (m/s)"], 0.0 ) ) } );
 			dataPoints.windspeed.rotation.push( parseFloatOr( wave["WindDirec (deg)"], 0.0 ) );
 			// Only want last value
 			dataPoints.currentMag.data = [{ x: time, y: parseFloatOr( wave["CurrmentMag (m/s)"], 0.0 ) }];
@@ -554,8 +559,8 @@ export function generateDataPoints( includes ) {
 		windspeed: { 
 			data: [], 
 			showInChart: false, 
-			description: "Wind Speed (m/s)",
-			label: window.innerWidth >= 768 ? 'Wind Speed (m/s & deg)' : 'Wind Spd (m/s & deg)',
+			description: "Wind Speed (knots)",
+			label: window.innerWidth >= 768 ? 'Wind Speed (knots)' : 'Wind Spd (knts)',
 			backgroundColor: 'rgba(77, 168, 248, 0.7)',
 			borderColor: 'rgba(77, 168, 248, 0.5)',
 			borderWidth: 0,
