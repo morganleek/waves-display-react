@@ -62,7 +62,6 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 
 		// Check again MAX_ARROW_LIMIT
 		const mod = wadGetMod( MAX_ARROW_LIMIT, waves.length );
-		console.log( MAX_ARROW_LIMIT + ' ' + waves.length + ' ' + mod );
 
 		// Loop
 		waves.forEach( ( wave, i ) => {
