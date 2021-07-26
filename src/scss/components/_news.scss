@@ -1,0 +1,47 @@
+.recent-news {
+	background: $header;
+	padding: 10px 15px;
+	position: relative;
+	transition: all 0.3s;
+	height: 38px;
+	&.collapse-me {
+		transform: translate(0, -100%);
+		margin-bottom: -38px;
+	}
+	& > div {
+		max-width: 1000px;
+		margin-left: auto;
+		margin-right: auto;
+		color: #fff;
+		position: relative;
+		& > * {
+			&:first-child {
+				margin-top: 0;
+			}
+			&:last-child {
+				margin-bottom: 0;
+			}
+			text-align: center;
+		}	
+	}
+	a {
+		color: #fff;
+		text-decoration: underline;
+		&:hover {
+			text-decoration: none;
+		}
+		&.close-me {
+			position: absolute;
+			top: 50%;
+			right: 15px;
+			transform: translate(0, -50%);
+			text-decoration: none;
+			border: 1px solid;
+			width: 15px;
+			height: 15px;
+			line-height: 10px;
+			text-align: center;
+			border-radius: 100px;
+		}
+	}
+}

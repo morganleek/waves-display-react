@@ -71,3 +71,36 @@
 	}
 
 	add_filter( 'script_loader_tag', 'wad_crossorigin_scipts', 10, 2 );
+
+	function wad_recent_news() {
+		$time_limit = strtotime( '-1 month' );
+		$the_query = new WP_Query( 
+			array(
+				'posts_type' => 'post',
+				'posts_per_page' => 1,
+				'date_query' => array(
+					'after' => array(
+						'year' => date('Y', $time_limit ),
+						'month' => date('m', $time_limit ), 
+						'day' => date('d', $time_limit )
+					)
+				)
+			)
+		);
+
+
+		if ( $the_query->have_posts() ) {
+				print '<div class="recent-news"><div>';
+				while ( $the_query->have_posts() ) {
+					$the_query->the_post();
+					print '<p><a href="' . get_permalink() . '">' . get_the_title() . '</a> &mdash; ' . get_the_date( 'd M Y' ) . '</p>';
+				}
+				print '</div>';
+			print '<a href="#" class="close-me">x</a>';
+			print '</div>';
+		} 
+
+		wp_reset_postdata();
+	}
+
+	add_action( 'wp_body_open', 'wad_recent_news', 20 );

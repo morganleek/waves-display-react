@@ -29,6 +29,7 @@ export class Map extends Component {
 			initBoundsSet: false,
 			icon: '',
 			labelIcon: '',
+			decommissionedIcon: '',
 			label: '',
 			focus: null
     }
@@ -45,7 +46,8 @@ export class Map extends Component {
 							buoyId: element.id,
 							label: element.web_display_name,
 							lat: parseFloat( element.lat ),
-							lng: parseFloat( element.lng )
+							lng: parseFloat( element.lng ),
+							isEnabled: parseInt( element.is_enabled )
 						};
 
 						this.setState( { markers: [...this.state.markers, marker] } );
@@ -107,7 +109,8 @@ export class Map extends Component {
 							buoyId: element.id,
 							label: element.web_display_name,
 							lat: path[0].lat, // First path lat/lng
-							lng: path[0].lng // First path lat/lng
+							lng: path[0].lng, // First path lat/lng
+							isEnabled: parseInt( element.is_enabled )
 						};
 						
 						this.setState( { markers: [...this.state.markers, marker] } );
@@ -178,9 +181,20 @@ export class Map extends Component {
 		}
 	}
 
+	onMapDecommissionedMarkerClick = ( marker ) => {
+		console.log( "Decommissioned Marker " + marker.buoyId );
+	}
+
 	onLoad = ( ref ) => {
 		const icon = {
 			url: wad.plugin + "dist/images/marker@2x.png",
+			labelOrigin: new window.google.maps.Point(0, 24),
+			scaledSize: new window.google.maps.Size(14,14),
+			anchor: new window.google.maps.Point(7,7)
+		};
+
+		const decommissionedIcon = {
+			url: wad.plugin + "dist/images/marker-decom@2x.png",
 			labelOrigin: new window.google.maps.Point(0, 24),
 			scaledSize: new window.google.maps.Size(14,14),
 			anchor: new window.google.maps.Point(7,7)
@@ -193,7 +207,7 @@ export class Map extends Component {
 			anchor: new window.google.maps.Point(4,4)
 		}
 
-		this.setState( { icon: icon, labelIcon: labelIcon, ref: ref } );
+		this.setState( { icon: icon, decommissionedIcon: decommissionedIcon, labelIcon: labelIcon, ref: ref } );
 	}
 	// onLoad = () => React.useCallback( function callback( map ) {
   //   // const bounds = new window.google.maps.LatLngBounds();
@@ -225,7 +239,7 @@ export class Map extends Component {
 
   render() {
 		const { center, zoom } = this.props;
-		const { markers, polylines, polylineMarkers, icon } = this.state;
+		const { markers, polylines, polylineMarkers, icon, decommissionedIcon } = this.state;
 
 		let polylineLabels = [];
 		if( Object.keys( polylineMarkers ).length !== 0 ) {
@@ -241,9 +255,20 @@ export class Map extends Component {
 		if( markers ) {
 			cluster = <MarkerClusterer gridSize={ 30 } maxZoom={ 7 }>
 				{ ( clusterer ) => 
-					markers.map( ( marker, i ) => (
-						<MapMarker buoyId={ marker.buoyId } icon={ icon } position={ { lat: marker.lat, lng: marker.lng } } label={ { text: marker.label, fontSize: '13px' } } key={ i } clusterer={ clusterer } markerFocus={ this.onMapMarkerClick } />
-					) )
+					markers.map( ( marker, i ) => {
+						
+						return (
+							<MapMarker 
+								buoyId={ marker.buoyId } 
+								icon={ ( marker.isEnabled == 1 ) ? icon : decommissionedIcon } 
+								position={ { lat: marker.lat, lng: marker.lng } } 
+								label={ { text: marker.label, fontSize: '13px' } } 
+								key={ i } 
+								clusterer={ clusterer } 
+								markerFocus={ (marker.isEnabled == 1 ) ? this.onMapMarkerClick : this.onMapDecommissionedMarkerClick } 
+							/>
+						) 
+					} )
 				}
 			</MarkerClusterer>
 		}

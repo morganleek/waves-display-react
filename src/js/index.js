@@ -53,4 +53,15 @@ document.addEventListener( "DOMContentLoaded", function( event ) {
   if( document.getElementsByClassName('page-template-wave-display-react').length ) {
     render( <App />, document.getElementById( "root" ) );
   }
+
+  // News Message
+  const closeNews = document.querySelector( '.close-me' );
+  closeNews.addEventListener( 'click', ( e ) => { 
+    e.preventDefault();
+    const news = document.querySelector( '.recent-news' );
+    if( news ) {
+      news.classList.add( 'collapse-me' );
+    }
+  } );
 } );
+

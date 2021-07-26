@@ -43,21 +43,22 @@ export class Charts extends Component {
     let chartsLoopRender;
     if( buoys.length > 0 ) {
 			chartsLoopRender = buoys.map( ( row, index ) => {    
-        // <div className={ classNames( ['card', 'card-primary', 'mb-3'] ) } key={ index }>
-				return (
-          <Chart buoyId={ row.id } 
-                buoyLabel={ row.web_display_name } 
-                buoyLastUpdated={ row.last_update } 
-                buoyLat={ row.lat } 
-                buoyLng={ row.lng }
-                buoyDescription={ row.description }
-                buoyDownloadText={ row.download_text }
-                updateCenter={ this.props.updateCenter }
-                updateZoom={ this.props.updateZoom }
-                key={ index }
-          />
-        )
-        //  </div>
+        // <div className={ classNames( ['card', 'card-primary', 'mb-3'] ) } key={ index }> 
+        if( parseInt( row.is_enabled ) == 1 ) {
+          return (
+            <Chart buoyId={ row.id } 
+                  buoyLabel={ row.web_display_name } 
+                  buoyLastUpdated={ row.last_update } 
+                  buoyLat={ row.lat } 
+                  buoyLng={ row.lng }
+                  buoyDescription={ row.description }
+                  buoyDownloadText={ row.download_text }
+                  updateCenter={ this.props.updateCenter }
+                  updateZoom={ this.props.updateZoom }
+                  key={ index }
+            />
+          )
+        }
 			} );
     }
 
