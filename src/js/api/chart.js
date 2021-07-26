@@ -31,21 +31,33 @@ function reverseRotation( rotation ) {
 	return ( reversed < 0 ) ? 0 : ( reversed + 180 ) % 360;
 }
 
+// Get mod for max number of elements
+function wadGetMod( max, length ) {
+	const mod = Math.ceil( length / max );
+	return ( mod >= 1 ) ? mod : 1;
+}
+
 // Process and sort data and push into chart
 export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
+	const MAX_ARROW_LIMIT = 60;
+
 	if( !includes ) {
 		// Ordering 
 		includes = {
-			sst: false, 
-			bottomTemp: false,
+			hsig: true,
 			tp: true,
-			hsig: true
+			sst: true, 
+			bottomTemp: true,
 		};
 	}
 
 	if( typeof( waves ) != "undefined" && waves.length > 0 ) {
 		let chartLabels = [];
 		let dataPoints = generateDataPoints( includes );
+
+		// Check again MAX_ARROW_LIMIT
+		const mod = wadGetMod( MAX_ARROW_LIMIT, waves.length );
+		console.log( MAX_ARROW_LIMIT + ' ' + waves.length + ' ' + mod );
 
 		// Loop
 		waves.forEach( ( wave, i ) => {
@@ -61,13 +73,17 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 				}
 				// Peak
 				if( parseFloatOr( wave["Tp (s)"], -1 ) > 0 ) {
-					dataPoints.tp.data.push( { x: time, y: parseFloatOr( wave["Tp (s)"], 0.0 ) } );
-					dataPoints.tp.rotation.push( reverseRotation( wave["Dp (deg)"] ) );
+					if( i % mod == 0 ) { // Reduce to every nth item according to MAX_ARROW_LIMIT
+						dataPoints.tp.data.push( { x: time, y: parseFloatOr( wave["Tp (s)"], 0.0 ) } );
+						dataPoints.tp.rotation.push( reverseRotation( wave["Dp (deg)"] ) );
+					}
 				}
 				// Mean
 				if( parseFloatOr( wave["Tm (s)"], -1 ) > 0 ) {
-					dataPoints.tm.data.push( { x: time, y: parseFloatOr( wave["Tm (s)"], 0.0 ) } );
-					dataPoints.tm.rotation.push( reverseRotation( wave["Dm (deg)"] ) );
+					if( i % mod == 0 ) { // Reduce to every nth item according to MAX_ARROW_LIMIT
+						dataPoints.tm.data.push( { x: time, y: parseFloatOr( wave["Tm (s)"], 0.0 ) } );
+						dataPoints.tm.rotation.push( reverseRotation( wave["Dm (deg)"] ) );
+					}
 				}
 				// Spread
 				if( parseFloatOr( wave["DpSpr (deg)"], -1 ) > 0 ) {
@@ -455,11 +471,11 @@ export function generateDataPoints( includes ) {
 			showInChart: true, 
 			label: window.innerWidth >= 768 ? 'Significant Wave Height (m)' : 'Sig Wave (m)',
 			description: "Significant Wave Height (m)",
-			backgroundColor: 'rgba(165, 223, 223, 0.6)',
+			backgroundColor: 'rgba(165, 223, 223, 0.4)',
 			borderColor: 'rgba(75, 192, 192, 1)',
-			borderWidth: 2,
+			borderWidth: 1,
 			lineTension: 0,
-			pointRadius: 0,
+			pointRadius: 1,
 			fill: true,
 			yAxisID: 'y-axis-1',
 			hidden: ( includes.hasOwnProperty( 'hsig' ) ) ? !includes.hsig : true
@@ -514,9 +530,9 @@ export function generateDataPoints( includes ) {
 			label: window.innerWidth >= 768 ? 'Sea Surface Temperature (°C)' : 'Sea Surf (°C)', 
 			backgroundColor: 'rgba(194, 59, 34, 1)',
 			borderColor: 'rgba(194, 59, 34, 1)',
-			borderWidth: 0,
+			borderWidth: 1,
 			lineTension: 0,
-			pointRadius: 2,
+			pointRadius: 1,
 			fill: false,
 			yAxisID: 'y-axis-3',
 			hidden: ( includes.hasOwnProperty( 'sst' ) ) ? !includes.sst : true
@@ -528,9 +544,9 @@ export function generateDataPoints( includes ) {
 			label: window.innerWidth ? 'Bottom Temperature (°C)' : 'Bot Temp (°C)',
 			backgroundColor: 'rgb(255, 159, 64, 0.5)',
 			borderColor: 'rgb(255, 159, 64, 1)',
-			borderWidth: 0,
+			borderWidth: 1,
 			lineTension: 0,
-			pointRadius: 2,
+			pointRadius: 1,
 			fill: false,
 			yAxisID: 'y-axis-3',
 			hidden: ( includes.hasOwnProperty( 'bottomTemp' ) ) ? !includes.bottomTemp : true
