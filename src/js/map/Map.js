@@ -35,7 +35,8 @@ export class Map extends Component {
 			focus: null,
 			historic: false,
 			buoyDownloadText: '',
-			downloadPath: ''
+			downloadPath: '',
+			currentZoom: 0
     }
 
 		this.handleModalClose = this.handleModalClose.bind( this );
@@ -44,6 +45,8 @@ export class Map extends Component {
 
 	// Init
 	componentDidMount() {
+		// Set zoom
+		this.setState( { currentZoom: this.props.zoom } );
 		// Get buoys
     getBuoys().then( json => {
 			if( json.length > 0 ) {
@@ -97,8 +100,9 @@ export class Map extends Component {
 					}
 
 					if( path.length > 0 ) {
+						const buoyId = parseInt( processed[0]["buoy_id"] );
 						const polyline = <MapPolyline 
-							buoyId={ parseInt( processed[0]["buoy_id"] ) } 
+							buoyId={ buoyId } 
 							key={ this.state.polylines.length } 
 							polylineFocus={ this.onMapPolylineClick }
 							pathTimes={ pathTimes }
@@ -123,19 +127,16 @@ export class Map extends Component {
 						};
 						
 						this.setState( { markers: [...this.state.markers, marker] } );
+
+						// Polyline markers 
+						this.initPolylineMarkers( { buoyId: element.id, pathTimes: pathTimes } );
 					}
 				} );
-
-				// See 'waves-display' for labels
 			}
 		} );
   }
-
-	// Marker click event
-	// onMarkerClick = ( e ) => {
-	// }
-
-	onMapPolylineClick = ( polyline ) => {
+	
+	initPolylineMarkers = ( polyline ) => {
 		const { ref, polylineMarkers, labelIcon } = this.state;
 		const { buoyId, pathTimes } = polyline;
 
@@ -149,20 +150,34 @@ export class Map extends Component {
 			else {
 				// Setup empty array
 				const newMarkers = [];
-
-				// Fill with every 24th value
-				for( let n = 0; n < pathTimes.length; n += 24 ) { // 
-					const labelDate = new Date( pathTimes[n].time * 1000).toDateString();
-					const labelTime = new Date( pathTimes[n].time * 1000).toTimeString().replace(/\s\(.*/, '');
-					
-					const marker = <Marker 
-						position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } 
-						icon={ labelIcon } 
-						label={ { text: labelDate + ' ' + labelTime, fontSize: '11px' } } 
-						key={ n + 1000 } 
-						clickable={ false }
-					/>
-					newMarkers.push( marker );
+				
+				// Starting day
+				const startDate = new Date( pathTimes[0].time * 1000 )
+				let currentDay = startDate.getDate();
+				// Fetch first point of every day except the first
+				for( let n = 0; n < pathTimes.length; n++ ) { 
+					const pathDate = new Date( pathTimes[n].time * 1000 );
+					if( currentDay != pathDate.getDate() ) {
+						// Friend date format
+						currentDay = pathDate.getDate();
+						const day = pathDate.getDate().toString().padStart( 2, "0" );
+						const month = pathDate.getMonth().toString().padStart( 2, "0" );
+						let label = day + '/' + month;
+						// Add year for first entry
+						if( newMarkers.length == 0 ) {
+							label += "/" + pathDate.getFullYear();
+						}
+						
+						// Add to markers
+						const marker = <Marker 
+							position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } 
+							icon={ labelIcon } 
+							label={ { text: label, fontSize: '11px' } } 
+							key={ n + 1000 } 
+							clickable={ false }
+						/>
+						newMarkers.push( marker );
+					}
 				}
 
 				const updateMarkers = Object.assign( {}, polylineMarkers );
@@ -171,6 +186,10 @@ export class Map extends Component {
 				this.setState( { polylineMarkers: updateMarkers } ); 
 			}
 		}
+	}
+
+	onMapPolylineClick = ( polyline ) => {
+		this.initPolylineMarkers( polyline );
 	}
 
 	onMapMarkerClick = ( marker ) => {
@@ -196,8 +215,6 @@ export class Map extends Component {
 		const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=0&end=" + end;
 		
 		this.setState( { downloadPath: wad.ajax + path, buoyDownloadText: marker.buoyDownloadText });
-		// console.log( marker.buoyDownloadText )
-		console.log( wad.ajax + path );
 	}
 
 	onLoad = ( ref ) => {
@@ -235,6 +252,13 @@ export class Map extends Component {
 		this.setBounds( );
 	}
 
+	onZoomChanged = ( ) => {
+		const { ref } = this.state;
+		if( ref ) {
+			this.setState( { currentZoom: ref.getZoom() } );
+		}
+	}
+
 	onHistoricChange = ( newState ) => {
 		this.setState( { historic: newState.target.checked } );
 	}
@@ -267,11 +291,13 @@ export class Map extends Component {
 	}
 
   render() {
-		const { center, zoom } = this.props;
-		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic, downloadPath, buoyDownloadText } = this.state;
+		const { center } = this.props;
+		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic, downloadPath, buoyDownloadText, currentZoom } = this.state;
+		
 
+		// Show polyline markers when zoom is >= 7
 		let polylineLabels = [];
-		if( Object.keys( polylineMarkers ).length !== 0 ) {
+		if( Object.keys( polylineMarkers ).length !== 0 && currentZoom >= 7 ) {
 			for ( const [key, value] of Object.entries( polylineMarkers ) ) {
 				polylineLabels = [ ...polylineLabels, ...value ];
 			}
@@ -319,17 +345,18 @@ export class Map extends Component {
 
 		let mapRender = <h2>Loading&hellip;</h2>;
 		// Load when markers, zoom and center are defined
-		if( center && zoom && markers ) {
+		if( center && currentZoom && markers ) {
 			mapRender = <LoadScript
 				googleMapsApiKey={ ( typeof( wad ) != "undefined" ) ? wad.googleApiKey : '' }
 			>
 				<GoogleMap
 					mapContainerStyle={ containerStyle }
 					center={ center }
-					zoom={ zoom }
+					zoom={ currentZoom }
 					options={{ styles: mapStyles }}
 					onLoad={ this.onLoad }
 					onBoundsChanged={ this.onBoundsChanged }
+					onZoomChanged={ this.onZoomChanged }
 				>
 					<>{ cluster }{ polylines }{ polylineLabels }</>
 				</GoogleMap>
