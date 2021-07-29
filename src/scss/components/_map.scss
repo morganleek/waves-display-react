@@ -23,7 +23,6 @@
 	margin: 10px;
 	padding: 0px;
 	text-transform: none;
-	appearance: none;
 	padding: 10px;
 	border-radius: 2px;
 	height: 40px;
@@ -31,6 +30,7 @@
 	overflow: hidden;
 	display: flex;
 	align-items: center;
+	z-index: 1;
 	label {
 		margin: 0;
 		display: flex;
