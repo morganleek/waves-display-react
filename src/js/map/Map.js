@@ -4,6 +4,7 @@ import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline, Polygon } fro
 
 import { getBuoys, getDriftingBuoys } from '../api/buoys';
 import { wadRawDataToChartData } from '../api/chart';
+import { ChartDownloadModal } from "../chart/ChartDownloadModal";
 
 import mapStyles from './map-style';
 
@@ -32,8 +33,13 @@ export class Map extends Component {
 			decommissionedIcon: '',
 			label: '',
 			focus: null,
-			historic: false
+			historic: false,
+			buoyDownloadText: '',
+			downloadPath: ''
     }
+
+		this.handleModalClose = this.handleModalClose.bind( this );
+    this.handleDownloadClick = this.handleDownloadClick.bind( this );
   }
 
 	// Init
@@ -48,7 +54,9 @@ export class Map extends Component {
 							label: element.web_display_name,
 							lat: parseFloat( element.lat ),
 							lng: parseFloat( element.lng ),
-							isEnabled: parseInt( element.is_enabled )
+							isEnabled: parseInt( element.is_enabled ),
+							buoyDownloadText: element.download_text,
+							downloadPath: '',
 						};
 
 						this.setState( { markers: [...this.state.markers, marker] } );
@@ -183,7 +191,13 @@ export class Map extends Component {
 	}
 
 	onMapDecommissionedMarkerClick = ( marker ) => {
-		console.log( "Decommissioned Marker " + marker.buoyId );
+		const buoyId = marker.buoyId;
+		const end = Date.now() / 1000;
+		const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=0&end=" + end;
+		
+		this.setState( { downloadPath: wad.ajax + path, buoyDownloadText: marker.buoyDownloadText });
+		// console.log( marker.buoyDownloadText )
+		console.log( wad.ajax + path );
 	}
 
 	onLoad = ( ref ) => {
@@ -224,8 +238,17 @@ export class Map extends Component {
 	onHistoricChange = ( newState ) => {
 		this.setState( { historic: newState.target.checked } );
 	}
-	
 
+	handleDownloadClick() {
+    const { downloadPath } = this.state;
+    window.location = downloadPath;
+    this.setState( { downloadPath: '', buoyDownloadText: '' } );
+  }
+
+  handleModalClose() {
+    this.setState( { downloadPath: '', buoyDownloadText: '' } );
+  }
+	
 	setBounds = ( ) => {
 		// Set initial bounds
 		const { boundsSet, initBoundsSet, ref } = this.state;
@@ -245,13 +268,11 @@ export class Map extends Component {
 
   render() {
 		const { center, zoom } = this.props;
-		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic } = this.state;
+		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic, downloadPath, buoyDownloadText } = this.state;
 
 		let polylineLabels = [];
 		if( Object.keys( polylineMarkers ).length !== 0 ) {
-			// console.log( polylineMarkers );
 			for ( const [key, value] of Object.entries( polylineMarkers ) ) {
-				// console.log(`${key}: ${value}`);
 				polylineLabels = [ ...polylineLabels, ...value ];
 			}
 		}
@@ -263,6 +284,7 @@ export class Map extends Component {
 				{ ( clusterer ) => 
 					markers.map( ( marker, i ) => {
 						if( marker.isEnabled !== 1 && !historic ) {
+							// Hide historic buoys
 							return;
 						}
 						return (
@@ -274,11 +296,25 @@ export class Map extends Component {
 								key={ i } 
 								clusterer={ clusterer } 
 								markerFocus={ (marker.isEnabled == 1 ) ? this.onMapMarkerClick : this.onMapDecommissionedMarkerClick } 
+								buoyDownloadText={ marker.buoyDownloadText }
 							/>
 						) 
 					} )
 				}
 			</MarkerClusterer>
+		}
+
+		// Download popup 
+		let chartModal;
+		if( downloadPath.length > 0 ) {
+			const ref = React.createRef();
+			chartModal = <ChartDownloadModal 
+				title="Terms and Conditions"
+				license={ buoyDownloadText }
+				close={ this.handleModalClose }
+				download={ this.handleDownloadClick }
+				ref={ ref }
+			/>;
 		}
 
 		let mapRender = <h2>Loading&hellip;</h2>;
@@ -312,6 +348,7 @@ export class Map extends Component {
 
     return (
 			<div className="maps">
+				{ chartModal }
 				{ mapRender }
 			</div>
     )
@@ -320,7 +357,7 @@ export class Map extends Component {
 
 const MapMarker = ( props ) => {
 	const onMarkerClick = ( e ) => {
-		props.markerFocus( { buoyId: props.buoyId, position: props.position } );
+		props.markerFocus( { buoyId: props.buoyId, position: props.position, buoyDownloadText: props.buoyDownloadText } );
 	}
 
 	return (
