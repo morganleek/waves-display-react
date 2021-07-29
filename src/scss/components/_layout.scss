@@ -91,8 +91,6 @@ body {
 				@media (min-width: 768px) { 
 				padding: 10px;
 				grid-area: 1 / 1 / 2 / 3;
-				position: relative;
-				z-index: 10;
 					& > div > .card {
 						margin-left: 50%;
 						transition: all 0.3s;

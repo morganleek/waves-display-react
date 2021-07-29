@@ -14,10 +14,9 @@
 
 #historic-data {
 	position: absolute;
-	top: 0;
-	right: 50px;
+	top: 50px;
+	left: 0;
 	z-index: 1000;
-
 	background: none rgb(255, 255, 255);
 	border: 0px;
 	margin: 10px;
@@ -30,7 +29,6 @@
 	overflow: hidden;
 	display: flex;
 	align-items: center;
-	z-index: 1;
 	label {
 		margin: 0;
 		display: flex;
