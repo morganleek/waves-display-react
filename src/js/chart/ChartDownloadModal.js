@@ -7,7 +7,7 @@ export const ChartDownloadModal = ( { close, download, title, license } ) => (
       <div className={ classNames( 'modal-content' ) }>
         <div className={ classNames( 'modal-header' ) }>
           <h5 className={ classNames( 'modal-title' ) } id="chartModalLabel">{ title }</h5>
-          <button type="button" className={ classNames( 'btn-close' ) } aria-label="Close" onClick={ close } ></button>
+          <button type="button" className={ classNames( ['btn-close', 'fa', 'fa-close'] ) } aria-label="Close" onClick={ close } ></button>
         </div>
         <div className={ classNames( 'modal-body' ) }>
           <p>{ license }</p>

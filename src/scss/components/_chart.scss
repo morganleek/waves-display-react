@@ -365,4 +365,12 @@
 
 #chartModal {
   display: block;
+  .btn-close {
+    border: none;
+    font-size: 1.5rem;
+    background: transparent;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
 }
