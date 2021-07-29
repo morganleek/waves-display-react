@@ -31,7 +31,8 @@ export class Map extends Component {
 			labelIcon: '',
 			decommissionedIcon: '',
 			label: '',
-			focus: null
+			focus: null,
+			historic: false
     }
   }
 
@@ -220,6 +221,11 @@ export class Map extends Component {
 		this.setBounds( );
 	}
 
+	onHistoricChange = ( newState ) => {
+		this.setState( { historic: newState.target.checked } );
+	}
+	
+
 	setBounds = ( ) => {
 		// Set initial bounds
 		const { boundsSet, initBoundsSet, ref } = this.state;
@@ -239,7 +245,7 @@ export class Map extends Component {
 
   render() {
 		const { center, zoom } = this.props;
-		const { markers, polylines, polylineMarkers, icon, decommissionedIcon } = this.state;
+		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic } = this.state;
 
 		let polylineLabels = [];
 		if( Object.keys( polylineMarkers ).length !== 0 ) {
@@ -256,7 +262,9 @@ export class Map extends Component {
 			cluster = <MarkerClusterer gridSize={ 30 } maxZoom={ 7 }>
 				{ ( clusterer ) => 
 					markers.map( ( marker, i ) => {
-						
+						if( marker.isEnabled !== 1 && !historic ) {
+							return;
+						}
 						return (
 							<MapMarker 
 								buoyId={ marker.buoyId } 
@@ -289,6 +297,16 @@ export class Map extends Component {
 				>
 					<>{ cluster }{ polylines }{ polylineLabels }</>
 				</GoogleMap>
+				<div id="historic-data">
+					<label for="show-historic">
+						<input 
+							type="checkbox"
+							name="show-historic"
+							checked={ historic }
+							onChange={ this.onHistoricChange }
+							/>&nbsp;Decommissioned
+					</label>
+				</div>
 			</LoadScript>;
 		}
 
