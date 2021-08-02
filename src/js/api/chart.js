@@ -49,10 +49,10 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 	if( !includes ) {
 		// Ordering 
 		includes = {
-			hsig: true,
 			tp: true,
 			sst: true, 
 			bottomTemp: true,
+			hsig: true,
 		};
 	}
 

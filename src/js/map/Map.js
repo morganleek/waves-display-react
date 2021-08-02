@@ -367,7 +367,7 @@ export class Map extends Component {
 							name="show-historic"
 							checked={ historic }
 							onChange={ this.onHistoricChange }
-							/>&nbsp;Decommissioned
+							/>&nbsp;Historical Data
 					</label>
 				</div>
 			</LoadScript>;
