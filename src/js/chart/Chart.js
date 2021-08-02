@@ -288,10 +288,10 @@ export class ChartTable extends Component {
     let dateTime = '';
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
       // Last value
-      const last = ( value.data.length > 0 ) ? value.data[ value.data.length - 1 ].y : 0;
+      const last = ( value.data.length > 0 ) ? value.data[0].y : 0;
       // Last Updates
       if( last > 0 ) {
-        const time = DateTime.fromMillis( parseInt( value.data[ value.data.length - 1 ].x ) );
+        const time = DateTime.fromMillis( parseInt( value.data[0].x ) );
 		    dateTime = ' - ' + time.toFormat( 'dd LLL y h:mma' );
         lineTableRender.push( <li key={ key }>
           { value.description }
