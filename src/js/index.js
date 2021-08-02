@@ -56,12 +56,14 @@ document.addEventListener( "DOMContentLoaded", function( event ) {
 
   // News Message
   const closeNews = document.querySelector( '.close-me' );
-  closeNews.addEventListener( 'click', ( e ) => { 
-    e.preventDefault();
-    const news = document.querySelector( '.recent-news' );
-    if( news ) {
-      news.classList.add( 'collapse-me' );
-    }
-  } );
+  if( closeNews ) {
+    closeNews.addEventListener( 'click', ( e ) => { 
+      e.preventDefault();
+      const news = document.querySelector( '.recent-news' );
+      if( news ) {
+        news.classList.add( 'collapse-me' );
+      }
+    } );
+  }
 } );
 
