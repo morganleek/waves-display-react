@@ -286,18 +286,27 @@ export class ChartTable extends Component {
     // Iterate through chart table items
     let lineTableRender = [];
     let dateTime = '';
+    // Each property
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
-      // Last value
-      const last = ( value.data.length > 0 ) ? value.data[0].y : 0;
-      // Last Updates
-      if( last > 0 ) {
-        const time = DateTime.fromMillis( parseInt( value.data[0].x ) );
-		    dateTime = ' - ' + time.toFormat( 'dd LLL y h:mma' );
-        lineTableRender.push( <li key={ key }>
-          { value.description }
-          <span>{ last }</span>
-        </li> );
+      // Properties data length
+      if( value.data.length > 0 ) {
+        // Search for biggest date value (not ordered by date always)
+        const biggest = value.data.reduce( ( prev, current ) => {
+          return ( prev.x > current.x ) ? prev : current;
+        } );
+        
+        // Check valid data  
+        if( biggest.y > 0 ) {
+          const time = DateTime.fromMillis( parseInt( biggest.x ) );
+          dateTime = ' - ' + time.toFormat( 'd LLL y h:mma' );
+          lineTableRender.push( <li key={ key }>
+            { value.description }
+            <span>{ biggest.y }</span>
+          </li> );
+        }
       }
+      
+
     }
 
     return (
