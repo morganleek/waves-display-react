@@ -21,7 +21,7 @@ export class Map extends Component {
 			ref: null,
 			markers: [],
 			polylines: [],
-			polylineMarkers: {},
+			polylineMarkers: [],
 			minLat: 90,
 			maxLat: -90,
 			minLng: 180,
@@ -129,67 +129,44 @@ export class Map extends Component {
 						this.setState( { markers: [...this.state.markers, marker] } );
 
 						// Polyline markers 
-						this.initPolylineMarkers( { buoyId: element.id, pathTimes: pathTimes } );
+						const newMarkers = [];
+						// Start date/time
+						const startDate = new Date( pathTimes[0].time * 1000 )
+						let currentDay = startDate.getDate();
+						for( let n = 0; n < pathTimes.length; n++ ) { 
+							const pathDate = new Date( pathTimes[n].time * 1000 );
+							if( currentDay != pathDate.getDate() ) {
+								// Friendly date format
+								currentDay = pathDate.getDate();
+								const day = pathDate.getDate().toString().padStart( 2, "0" );
+								const month = pathDate.getMonth().toString().padStart( 2, "0" );
+								let label = day + '/' + month;
+
+								// Add year for first entry
+								if( newMarkers.length == 0 ) {
+									label += "/" + pathDate.getFullYear();
+								}
+								
+								// Add to markers
+								let driftingMarker = {
+									lat: pathTimes[n].lat,
+									lng: pathTimes[n].lng,
+									label: label,
+									key: n + 1000
+								};
+								newMarkers.push( driftingMarker );
+							}	
+						}
+						this.setState( { polylineMarkers: [...this.state.polylineMarkers, ...newMarkers] } ); 
 					}
 				} );
 			}
 		} );
   }
-	
-	initPolylineMarkers = ( polyline ) => {
-		const { ref, polylineMarkers, labelIcon } = this.state;
-		const { buoyId, pathTimes } = polyline;
-
-		if( ref ) {
-			if( polylineMarkers[buoyId] != undefined ) {
-				// Remove
-				let newPolylineMarkers = Object.assign( {}, polylineMarkers );
-				delete( newPolylineMarkers[buoyId] );
-				this.setState( { polylineMarkers: newPolylineMarkers } );
-			}
-			else {
-				// Setup empty array
-				const newMarkers = [];
-				
-				// Starting day
-				const startDate = new Date( pathTimes[0].time * 1000 )
-				let currentDay = startDate.getDate();
-				// Fetch first point of every day except the first
-				for( let n = 0; n < pathTimes.length; n++ ) { 
-					const pathDate = new Date( pathTimes[n].time * 1000 );
-					if( currentDay != pathDate.getDate() ) {
-						// Friend date format
-						currentDay = pathDate.getDate();
-						const day = pathDate.getDate().toString().padStart( 2, "0" );
-						const month = pathDate.getMonth().toString().padStart( 2, "0" );
-						let label = day + '/' + month;
-						// Add year for first entry
-						if( newMarkers.length == 0 ) {
-							label += "/" + pathDate.getFullYear();
-						}
-						
-						// Add to markers
-						const marker = <Marker 
-							position={ { lat: pathTimes[n].lat, lng: pathTimes[n].lng } } 
-							icon={ labelIcon } 
-							label={ { text: label, fontSize: '11px' } } 
-							key={ n + 1000 } 
-							clickable={ false }
-						/>
-						newMarkers.push( marker );
-					}
-				}
-
-				const updateMarkers = Object.assign( {}, polylineMarkers );
-				updateMarkers[buoyId] = newMarkers;
-
-				this.setState( { polylineMarkers: updateMarkers } ); 
-			}
-		}
-	}
-
+		
 	onMapPolylineClick = ( polyline ) => {
-		this.initPolylineMarkers( polyline );
+		// this.initPolylineMarkers( polyline );
+		return;
 	}
 
 	onMapMarkerClick = ( marker ) => {
@@ -241,12 +218,6 @@ export class Map extends Component {
 
 		this.setState( { icon: icon, decommissionedIcon: decommissionedIcon, labelIcon: labelIcon, ref: ref } );
 	}
-	// onLoad = () => React.useCallback( function callback( map ) {
-  //   // const bounds = new window.google.maps.LatLngBounds();
-  //   // map.fitBounds(bounds);
-  //   // setMap(map)
-	// 	this.setState( { ref: map } );
-  // }, [] )
 
 	onBoundsChanged = ( ) => {
 		this.setBounds( );
@@ -292,15 +263,21 @@ export class Map extends Component {
 
   render() {
 		const { center } = this.props;
-		const { markers, polylines, polylineMarkers, icon, decommissionedIcon, historic, downloadPath, buoyDownloadText, currentZoom } = this.state;
+		const { markers, polylines, polylineMarkers, icon, labelIcon, decommissionedIcon, historic, downloadPath, buoyDownloadText, currentZoom } = this.state;
 		
 
 		// Show polyline markers when zoom is >= 7
 		let polylineLabels = [];
-		if( Object.keys( polylineMarkers ).length !== 0 && currentZoom >= 7 ) {
-			for ( const [key, value] of Object.entries( polylineMarkers ) ) {
-				polylineLabels = [ ...polylineLabels, ...value ];
-			}
+		if( polylineMarkers && currentZoom >= 7 ) {
+			polylineLabels = polylineMarkers.map( ( marker, i ) => {
+				return <Marker 
+					position={ { lat: marker.lat, lng: marker.lng } } 
+					icon={ labelIcon } 
+					label={ { text: marker.label, fontSize: '11px' } } 
+					key={ marker.key } 
+					clickable={ false }
+				/>
+			} );
 		}
 		
 

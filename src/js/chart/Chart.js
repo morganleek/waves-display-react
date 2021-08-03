@@ -312,9 +312,14 @@ export class ChartTable extends Component {
     }
 
     // Create date string
+    let recentData = true;
     if( time > 0 ) {
       const timeMillis = DateTime.fromMillis( time );
-      dateTime = ' - ' + timeMillis.toFormat( 'd LLL y h:mma' );
+      recentData = ( ( 2 * 24 * 60 * 60 * 1000 + Date.now() ) > time );
+
+      console.log( 2 * 24 * 60 * 60 * 1000 + Date.now() );
+      console.log( time );
+      dateTime = <span className={ classNames( { "recent-data": recentData } ) }>{ timeMillis.toFormat( 'd LLL y h:mma' ) }</span>
     }
 
     return (
