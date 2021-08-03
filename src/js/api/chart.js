@@ -33,7 +33,7 @@ function reverseRotation( rotation ) {
 
 // Wind speed to knots
 function windSpeedToKnots( speed ) {
-	return Math.floor( speed / 1.944 * 1000 ) / 1000;
+	return Math.floor( speed / 1.944 * 10 ) / 10;
 }
 
 // Get mod for max number of elements
@@ -487,7 +487,7 @@ export function generateDataPoints( includes ) {
 		tp: { 
 			data: [], 
 			showInChart: true, 
-			label: window.innerWidth >= 768 ? 'Peak Wave Period & Direction (s & deg)' : 'Peak Wave/Dir (s & deg)',
+			label: window.innerWidth >= 768 ? 'Peak Wave Period & Direction (s & deg)ss' : 'Peak Wave/Dir (s & deg)',
 			description: "Peak Wave Period (s)",
 			backgroundColor: 'rgba(237, 135, 80, 1)',
 			borderColor: 'rgba(235, 127, 74, 0.5)',
