@@ -487,7 +487,7 @@ export function generateDataPoints( includes ) {
 		tp: { 
 			data: [], 
 			showInChart: true, 
-			label: window.innerWidth >= 768 ? 'Peak Wave Period & Direction (s & deg)ss' : 'Peak Wave/Dir (s & deg)',
+			label: window.innerWidth >= 768 ? 'Peak Wave Period & Direction (s & deg)' : 'Peak Wave/Dir (s & deg)',
 			description: "Peak Wave Period (s)",
 			backgroundColor: 'rgba(237, 135, 80, 1)',
 			borderColor: 'rgba(235, 127, 74, 0.5)',
@@ -605,31 +605,31 @@ export function generateDataPoints( includes ) {
 	return dataPoints;
 }
 
-export const panelWrapper = "<div class='card card-primary mb-3'>" +
-  "<div class='card-header'>" +
-		"<h6 class='pull-left text-white'>{{ buoyLabel }} <span style='opacity: 0.35;'>#{{ buoyId }}</span><time></time></h6>" + 
-		"<div class='btn-group chart-js-menu pull-right' role='group' aria-label='Chart Tools'>" + 
-			"<button class='expand-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}'><i class='fa fa-expand' aria-hidden='true'></i>&nbsp;&nbsp;Expand</button>" +
-			"<button class='maps-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}' data-buoy-lat='{{ buoyLat }}' data-buoy-lng='{{ buoyLng }}'><i class='fa fa-crosshairs' aria-hidden='true'></i>&nbsp;&nbsp;Centre</button>" +
-			"<button class='download-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}'><i class='fa fa-floppy-o' aria-hidden='true'></i>&nbsp;&nbsp;Export Data</button>" +
-			"<button class='calendars-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}' data-buoy-start='{{ buoyStartTime }}' data-buoy-end='{{ buoyEndTime }}'><i class='fa fa-calendar' aria-hidden='true'></i>&nbsp;&nbsp;<span class='dateRangeButtonLabel'>Date Range</span> <i class='fa fa-caret-down' aria-hidden='true'></i></button>" +
-		"</div>" +
-	"</div>" + 
-	"<div class='card-body'>" + 
-		"<div class='canvas-legend'></div>" +
-    "<div class='canvas-wrapper loading'>" +
-      "<canvas></canvas>" +
-    "</div>" +
-    "<h5 class='latest-observations'>Latest Observations <time></time></h5>" +
-		"<div class='buoy-description'>" + 
-			"<div class='decription'></div>" +
-			"<div class='image'></div>" +
-			"<div class='memplot'></div>" +
-		"</div>" + 
-		"<div class='chart-info'>" + 
-		"</div>" +
-  "</div>" +
-"</div>";
+// export const panelWrapper = "<div class='card card-primary mb-3'>" +
+//   "<div class='card-header'>" +
+// 		"<h6 class='pull-left text-white'>{{ buoyLabel }} <span style='opacity: 0.35;'>#{{ buoyId }}</span><time></time></h6>" + 
+// 		"<div class='btn-group chart-js-menu pull-right' role='group' aria-label='Chart Tools'>" + 
+// 			"<button class='expand-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}'><i class='fa fa-expand' aria-hidden='true'></i>&nbsp;&nbsp;Expand</button>" +
+// 			"<button class='maps-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}' data-buoy-lat='{{ buoyLat }}' data-buoy-lng='{{ buoyLng }}'><i class='fa fa-crosshairs' aria-hidden='true'></i>&nbsp;&nbsp;Centre</button>" +
+// 			"<button class='download-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}'><i class='fa fa-floppy-o' aria-hidden='true'></i>&nbsp;&nbsp;Export Data</button>" +
+// 			"<button class='calendars-trigger btn btn-outline-secondary' data-buoy-id='{{ buoyId }}' data-buoy-start='{{ buoyStartTime }}' data-buoy-end='{{ buoyEndTime }}'><i class='fa fa-calendar' aria-hidden='true'></i>&nbsp;&nbsp;<span class='dateRangeButtonLabel'>Date Range</span> <i class='fa fa-caret-down' aria-hidden='true'></i></button>" +
+// 		"</div>" +
+// 	"</div>" + 
+// 	"<div class='card-body'>" + 
+// 		"<div class='canvas-legend'></div>" +
+//     "<div class='canvas-wrapper loading'>" +
+//       "<canvas></canvas>" +
+//     "</div>" +
+//     "<h5 class='latest-observations'>Latest Observations <time></time></h5>" +
+// 		"<div class='buoy-description'>" + 
+// 			"<div class='decription'></div>" +
+// 			"<div class='image'></div>" +
+// 			"<div class='memplot'></div>" +
+// 		"</div>" + 
+// 		"<div class='chart-info'>" + 
+// 		"</div>" +
+//   "</div>" +
+// "</div>";
 
 export const wadGetAspectRatio = ( multiplier = 1 ) => {
 	const sizing = ( window.innerWidth >= 992 ) ? 'desktop' : ( window.innerWidth >= 768 ) ? 'tablet' : ( window.innerWidth >= 450 ) ? 'mobileLandscape' : 'mobilePortrait';
