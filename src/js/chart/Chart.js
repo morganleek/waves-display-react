@@ -285,6 +285,7 @@ export class ChartTable extends Component {
   render( ) {
     // Iterate through chart table items
     let lineTableRender = [];
+    let time = 0;
     let dateTime = '';
     // Each property
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
@@ -295,18 +296,25 @@ export class ChartTable extends Component {
           return ( prev.x > current.x ) ? prev : current;
         } );
         
+        // Check is the lastest of all data points
+        if( biggest.x > time ) {
+          time = biggest.x;
+        }
+
         // Check valid data  
         if( biggest.y > 0 ) {
-          const time = DateTime.fromMillis( parseInt( biggest.x ) );
-          dateTime = ' - ' + time.toFormat( 'd LLL y h:mma' );
           lineTableRender.push( <li key={ key }>
             { value.description }
             <span>{ biggest.y }</span>
           </li> );
         }
       }
-      
+    }
 
+    // Create date string
+    if( time > 0 ) {
+      const timeMillis = DateTime.fromMillis( time );
+      dateTime = ' - ' + timeMillis.toFormat( 'd LLL y h:mma' );
     }
 
     return (
