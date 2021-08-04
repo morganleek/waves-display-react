@@ -285,7 +285,7 @@ export class ChartTable extends Component {
   render( ) {
     // Iterate through chart table items
     let lineTableRender = [];
-    let time = 0;
+    let last = 0;
     let dateTime = '';
     // Each property
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
@@ -297,8 +297,8 @@ export class ChartTable extends Component {
         } );
         
         // Check is the lastest of all data points
-        if( biggest.x > time ) {
-          time = biggest.x;
+        if( biggest.x > last ) {
+          last = biggest.x;
         }
 
         // Check valid data  
@@ -313,13 +313,12 @@ export class ChartTable extends Component {
 
     // Create date string
     let recentData = true;
-    if( time > 0 ) {
-      const timeMillis = DateTime.fromMillis( time );
-      recentData = ( ( 2 * 24 * 60 * 60 * 1000 + Date.now() ) > time );
-
-      console.log( 2 * 24 * 60 * 60 * 1000 + Date.now() );
-      console.log( time );
-      dateTime = <span className={ classNames( { "recent-data": recentData } ) }>{ timeMillis.toFormat( 'd LLL y h:mma' ) }</span>
+    if( last > 0 ) {
+      const lastTime = DateTime.fromMillis( last );
+      const future = ( 2 * 24 * 60 * 60 * 1000 + Date.now() ); // 2 days
+      // Mark if last record is more than 2 days
+      recentData = future > last;
+      dateTime = <span className={ classNames( { "recent-date": recentData, "out-of-date": !recentData } ) }>{ lastTime.toFormat( 'd LLL y h:mma' ) }</span>
     }
 
     return (
