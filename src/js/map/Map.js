@@ -21,6 +21,7 @@ export class Map extends Component {
 			ref: null,
 			markers: [],
 			polylines: [],
+			polylineTimes: [],
 			polylineMarkers: [],
 			minLat: 90,
 			maxLat: -90,
@@ -33,7 +34,8 @@ export class Map extends Component {
 			decommissionedIcon: '',
 			label: '',
 			focus: null,
-			historic: false,
+			historicData: false,
+			liveData: true,
 			buoyDownloadText: '',
 			downloadPath: '',
 			currentZoom: 0
@@ -100,22 +102,30 @@ export class Map extends Component {
 					}
 
 					if( path.length > 0 ) {
-						const buoyId = parseInt( processed[0]["buoy_id"] );
-						const polyline = <MapPolyline 
-							buoyId={ buoyId } 
-							key={ this.state.polylines.length } 
-							polylineFocus={ this.onMapPolylineClick }
-							pathTimes={ pathTimes }
-							options={ {
-								path: path,
-								geodesic: true,
-								strokeColor: "#FF0000",
-								strokeOpacity: 1.0,
-								strokeWeight: 2,
-								clickable: true
-							} 
-						} />;
-						this.setState( { polylines: [...this.state.polylines, polyline] } );
+						// const buoyId = parseInt( processed[0]["buoy_id"] );
+						// const polyline = <MapPolyline 
+						// 	buoyId={ buoyId } 
+						// 	key={ this.state.polylines.length } 
+						// 	polylineFocus={ this.onMapPolylineClick }
+						// 	pathTimes={ pathTimes }
+						// 	options={ {
+						// 		path: path,
+						// 		geodesic: true,
+						// 		strokeColor: "#FF0000",
+						// 		strokeOpacity: 1.0,
+						// 		strokeWeight: 2,
+						// 		clickable: true
+						// 	} 
+						// } />;
+						// this.setState( { polylines: [...this.state.polylines, polyline] } );
+
+						const polyLineTime = {
+							buoyId: element.id,
+							isEnabled: parseInt( element.is_enabled ),
+							pathTimes: pathTimes,
+							path: path
+						};
+						this.setState( { polylineTimes: [...this.state.polylineTimes, polyLineTime] } );
 
 						// Add Marker
 						let marker = {
@@ -152,7 +162,8 @@ export class Map extends Component {
 									lat: pathTimes[n].lat,
 									lng: pathTimes[n].lng,
 									label: label,
-									key: n + 1000
+									key: n + 1000,
+									isEnabled: parseInt( element.is_enabled )
 								};
 								newMarkers.push( driftingMarker );
 							}	
@@ -231,7 +242,11 @@ export class Map extends Component {
 	}
 
 	onHistoricChange = ( newState ) => {
-		this.setState( { historic: newState.target.checked } );
+		this.setState( { historicData: newState.target.checked } );
+	}
+	
+	onLiveChange = ( newState ) => {
+		this.setState( { liveData: newState.target.checked } );
 	}
 
 	handleDownloadClick() {
@@ -263,13 +278,41 @@ export class Map extends Component {
 
   render() {
 		const { center } = this.props;
-		const { markers, polylines, polylineMarkers, icon, labelIcon, decommissionedIcon, historic, downloadPath, buoyDownloadText, currentZoom } = this.state;
-		
+		const { markers, polylineTimes, polylineMarkers, icon, labelIcon, decommissionedIcon, historicData, liveData, downloadPath, buoyDownloadText, currentZoom } = this.state;
 
+		// Polylines
+		let polylines = [];
+		if( polylineTimes ) {
+			polylines = polylineTimes.map( ( marker, i ) => {
+				if( ( marker.isEnabled !== 1 && !historicData ) || ( marker.isEnabled == 1 && !liveData ) ) {
+					// Hide historic buoys OR hide live buoys
+					return;
+				}
+				return <MapPolyline 
+					buoyId={ marker.buoyId } 
+					key={ marker.pathTimes.length } 
+					polylineFocus={ this.onMapPolylineClick }
+					pathTimes={ marker.pathTimes }
+					options={ {
+						path: marker.path,
+						geodesic: true,
+						strokeColor: "#FF0000",
+						strokeOpacity: 1.0,
+						strokeWeight: 2,
+						clickable: true
+					} 
+				} />;
+			} );
+		}
+		
 		// Show polyline markers when zoom is >= 7
 		let polylineLabels = [];
 		if( polylineMarkers && currentZoom >= 7 ) {
 			polylineLabels = polylineMarkers.map( ( marker, i ) => {
+				if( ( marker.isEnabled !== 1 && !historicData ) || ( marker.isEnabled == 1 && !liveData ) ) {
+					// Hide historic buoys OR hide live buoys
+					return;
+				}
 				return <Marker 
 					position={ { lat: marker.lat, lng: marker.lng } } 
 					icon={ labelIcon } 
@@ -286,8 +329,8 @@ export class Map extends Component {
 			cluster = <MarkerClusterer gridSize={ 30 } maxZoom={ 7 }>
 				{ ( clusterer ) => 
 					markers.map( ( marker, i ) => {
-						if( marker.isEnabled !== 1 && !historic ) {
-							// Hide historic buoys
+						if( ( marker.isEnabled !== 1 && !historicData ) || ( marker.isEnabled == 1 && !liveData ) ) {
+							// Hide historic buoys OR hide live buoys
 							return;
 						}
 						return (
@@ -342,9 +385,17 @@ export class Map extends Component {
 						<input 
 							type="checkbox"
 							name="show-historic"
-							checked={ historic }
+							checked={ historicData }
 							onChange={ this.onHistoricChange }
 							/>&nbsp;Historical Data
+					</label>
+					<label for="show-live">
+						<input 
+							type="checkbox"
+							name="show-live"
+							checked={ liveData }
+							onChange={ this.onLiveChange }
+							/>&nbsp;Live Data
 					</label>
 				</div>
 			</LoadScript>;
