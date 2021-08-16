@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline, Polygon } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, MarkerClusterer, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 // import { GoogleMap, useLoadScript, MarkerClusterer, Marker, Polyline } from '@react-google-maps/api';
 
 import { getBuoys, getDriftingBuoys } from '../api/buoys';
@@ -36,9 +36,18 @@ export class Map extends Component {
 			focus: null,
 			historicData: false,
 			liveData: true,
+			buoyDownloadWindow: false,
 			buoyDownloadText: '',
 			downloadPath: '',
-			currentZoom: 0
+			currentZoom: 0,
+			infoWindow: {
+				visible: false,
+				lat: 0.0,
+				lng: 0.0,
+				startDate: '', 
+				endDate: '',
+				content: ''
+			}
     }
 
 		this.handleModalClose = this.handleModalClose.bind( this );
@@ -62,6 +71,9 @@ export class Map extends Component {
 							isEnabled: parseInt( element.is_enabled ),
 							buoyDownloadText: element.download_text,
 							downloadPath: '',
+							description: element.description,
+							startDate: element.start_date,
+							endDate: element.end_date
 						};
 
 						this.setState( { markers: [...this.state.markers, marker] } );
@@ -102,22 +114,6 @@ export class Map extends Component {
 					}
 
 					if( path.length > 0 ) {
-						// const buoyId = parseInt( processed[0]["buoy_id"] );
-						// const polyline = <MapPolyline 
-						// 	buoyId={ buoyId } 
-						// 	key={ this.state.polylines.length } 
-						// 	polylineFocus={ this.onMapPolylineClick }
-						// 	pathTimes={ pathTimes }
-						// 	options={ {
-						// 		path: path,
-						// 		geodesic: true,
-						// 		strokeColor: "#FF0000",
-						// 		strokeOpacity: 1.0,
-						// 		strokeWeight: 2,
-						// 		clickable: true
-						// 	} 
-						// } />;
-						// this.setState( { polylines: [...this.state.polylines, polyline] } );
 
 						const polyLineTime = {
 							buoyId: element.id,
@@ -133,7 +129,12 @@ export class Map extends Component {
 							label: element.web_display_name,
 							lat: path[0].lat, // First path lat/lng
 							lng: path[0].lng, // First path lat/lng
-							isEnabled: parseInt( element.is_enabled )
+							isEnabled: parseInt( element.is_enabled ),
+							buoyDownloadText: element.download_text,
+							downloadPath: '',
+							content: element.description,
+							startDate: element.start_date,
+							endDate: element.end_date
 						};
 						
 						this.setState( { markers: [...this.state.markers, marker] } );
@@ -198,11 +199,65 @@ export class Map extends Component {
 	}
 
 	onMapDecommissionedMarkerClick = ( marker ) => {
-		const buoyId = marker.buoyId;
-		const end = Date.now() / 1000;
-		const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=0&end=" + end;
-		
-		this.setState( { downloadPath: wad.ajax + path, buoyDownloadText: marker.buoyDownloadText });
+
+		const { ref } = this.state;
+		if( ref ) {
+			const buoyId = marker.buoyId;
+			const end = Date.now() / 1000;
+			const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=0&end=" + end;
+			const newCenter = { 
+				lat: parseFloat( marker.position.lat ), 
+				lng: parseFloat( marker.position.lng ) 
+			};
+			
+			// Pan to and zoom
+			ref.panTo( newCenter );
+			ref.setZoom( 8 );
+
+			console.log( marker );
+			// Buoy info
+			// const infoWindow = <p>Start date:<br />End Date:<br />Download</p>
+
+			this.setState( { 
+				infoWindow: {
+					visible: true,
+					lat: parseFloat( marker.position.lat ), 
+					lng: parseFloat( marker.position.lng ),
+					content: marker.description,
+					startDate: marker.startDate,
+					endDate: marker.endDate
+				},
+				downloadPath: wad.ajax + path,
+				buoyDownloadText: marker.buoyDownloadText
+			} );
+		}
+	}
+
+	onInfoWindowDownload = () => {
+		// Load download lincense modal and hide window
+		this.setState( {
+			buoyDownloadWindow: true,
+			infoWindow: {
+				visible: false,
+				lat: 0.0, 
+				lng: 0.0,
+				content: ''
+			}
+		} );
+	}
+
+	onCloseInfoWindow = () => {
+		// Close window and clear download modal data
+		this.setState( { 
+			infoWindow: {
+				visible: false,
+				lat: 0.0, 
+				lng: 0.0,
+				content: ''
+			},
+			downloadPath: '',
+			buoyDownloadText: ''
+		} );
 	}
 
 	onLoad = ( ref ) => {
@@ -252,11 +307,11 @@ export class Map extends Component {
 	handleDownloadClick() {
     const { downloadPath } = this.state;
     window.location = downloadPath;
-    this.setState( { downloadPath: '', buoyDownloadText: '' } );
+    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false } );
   }
 
   handleModalClose() {
-    this.setState( { downloadPath: '', buoyDownloadText: '' } );
+    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false } );
   }
 	
 	setBounds = ( ) => {
@@ -278,7 +333,21 @@ export class Map extends Component {
 
   render() {
 		const { center } = this.props;
-		const { markers, polylineTimes, polylineMarkers, icon, labelIcon, decommissionedIcon, historicData, liveData, downloadPath, buoyDownloadText, currentZoom } = this.state;
+		const { 
+			markers, 
+			polylineTimes, 
+			polylineMarkers, 
+			icon, 
+			labelIcon, 
+			decommissionedIcon, 
+			historicData, 
+			liveData, 
+			downloadPath, 
+			buoyDownloadWindow,
+			buoyDownloadText, 
+			currentZoom,
+			infoWindow
+		} = this.state;
 
 		// Polylines
 		let polylines = [];
@@ -333,6 +402,7 @@ export class Map extends Component {
 							// Hide historic buoys OR hide live buoys
 							return;
 						}
+						
 						return (
 							<MapMarker 
 								buoyId={ marker.buoyId } 
@@ -343,6 +413,9 @@ export class Map extends Component {
 								clusterer={ clusterer } 
 								markerFocus={ (marker.isEnabled == 1 ) ? this.onMapMarkerClick : this.onMapDecommissionedMarkerClick } 
 								buoyDownloadText={ marker.buoyDownloadText }
+								startDate={ marker.startDate }
+								endDate={ marker.startDate }
+								description={ marker.description }
 							/>
 						) 
 					} )
@@ -352,7 +425,7 @@ export class Map extends Component {
 
 		// Download popup 
 		let chartModal;
-		if( downloadPath.length > 0 ) {
+		if( buoyDownloadWindow ) { // downloadPath.length > 0
 			const ref = React.createRef();
 			chartModal = <ChartDownloadModal 
 				title="Terms and Conditions"
@@ -361,6 +434,37 @@ export class Map extends Component {
 				download={ this.handleDownloadClick }
 				ref={ ref }
 			/>;
+		}
+
+		let info = '';
+		if( infoWindow?.visible ) {
+			const sDate = new Date( infoWindow.startDate * 1000 );
+			const eDate = new Date( infoWindow.endDate * 1000 );
+			
+			// const sDay = sDate.getDate().toString().padStart( 2, "0" );
+			// const sMonth = sDate.getMonth().toString().padStart( 2, "0" );
+			// const sYear = sDate.getFullYear().toString();
+			// let startLabel = sDay + '/' + sMonth + '/' + sYear;
+
+
+			info = <InfoWindow
+				position={ { lat: infoWindow.lat, lng: infoWindow.lng } }
+				options={ { closeBoxURL: '', enableEventPropagation: true } }
+				onCloseClick={ this.onCloseInfoWindow }
+			>
+				<div style={ { opacity: 1, padding: '6px 12px', backgroundColor: '#ffffff' } }>
+					<div style={ { fontSize: '14px' } }>
+						<p>{ infoWindow.content }</p>
+						<p>
+							Start date: { sDate.toDateString() }<br />
+							End date: { eDate.toDateString() }<br />
+						</p>
+						<p>
+							<a href="#" onClick={ this.onInfoWindowDownload }>Download Data Archive</a>
+						</p>
+					</div>
+				</div>
+			</InfoWindow>;	
 		}
 
 		let mapRender = <h2>Loading&hellip;</h2>;
@@ -378,7 +482,7 @@ export class Map extends Component {
 					onBoundsChanged={ this.onBoundsChanged }
 					onZoomChanged={ this.onZoomChanged }
 				>
-					<>{ cluster }{ polylines }{ polylineLabels }</>
+					<>{ info }{ cluster }{ polylines }{ polylineLabels }</>
 				</GoogleMap>
 				<div id="historic-data">
 					<label for="show-historic">
@@ -412,11 +516,19 @@ export class Map extends Component {
 
 const MapMarker = ( props ) => {
 	const onMarkerClick = ( e ) => {
-		props.markerFocus( { buoyId: props.buoyId, position: props.position, buoyDownloadText: props.buoyDownloadText } );
-	}
-
+		props.markerFocus( { 
+			buoyId: props.buoyId,
+			position: props.position,
+			buoyDownloadText: props.buoyDownloadText,
+			startDate: props.startDate,
+			endDate: props.endDate, 
+			description: props.description
+		} );
+	} 
 	return (
-		<Marker onClick={ onMarkerClick } { ...props } />
+		<Marker onClick={ onMarkerClick } { ...props }>
+			{ props.children }
+		</Marker>
 	);
 }
 
