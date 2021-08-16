@@ -414,7 +414,7 @@ export class Map extends Component {
 								markerFocus={ (marker.isEnabled == 1 ) ? this.onMapMarkerClick : this.onMapDecommissionedMarkerClick } 
 								buoyDownloadText={ marker.buoyDownloadText }
 								startDate={ marker.startDate }
-								endDate={ marker.startDate }
+								endDate={ marker.endDate }
 								description={ marker.description }
 							/>
 						) 
