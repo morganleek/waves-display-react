@@ -15,7 +15,7 @@
 						$options = get_option('wad_options');
 						$options_fields = array(
 							array( 
-								'label' => 'API Key',
+								'label' => 'Google Maps API Key',
 								'name' => 'maps_key'
 							),
 							array( 
@@ -25,18 +25,22 @@
 							array( 
 								'label' => 'Map Centre Lng',
 								'name' => 'maps_lng',
+							),
+							array( 
+								'label' => 'Observation Table Fields',
+								'name' => 'obs_table_fields',
+								'placeholder' => '*'
 							)
 						);
 					?>
 					<table class="form-table">
 						<tbody>
-							<h2>Google Maps</h2>
 							<?php
 								foreach( $options_fields as $field ) {
 									print '<tr>';
 										print '<th scope="row"><label for="wad_options[' . $field['name'] . ']">' . $field['label'] . '</label></th>';
 										print '<td>';
-											print '<input name="wad_options[' . $field['name'] . ']" type="text" id="wad_options[' . $field['name'] . ']" value="' . esc_attr( isset( $options[$field['name']] ) ? $options[$field['name']] : '' ) . '" class="regular-text">';
+											print '<input name="wad_options[' . $field['name'] . ']" type="text" id="wad_options[' . $field['name'] . ']" value="' . esc_attr( isset( $options[$field['name']] ) ? $options[$field['name']] : '' ) . '" placeholder="' . $field['placeholder'] . '" class="regular-text">';
 											print isset( $field['description'] ) ? '<p>' . $field['description'] . '</p>' : '';
 										print '</td>';
 									print '</tr>';

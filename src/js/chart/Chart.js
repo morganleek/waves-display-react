@@ -289,8 +289,13 @@ export class ChartTable extends Component {
     let dateTime = '';
     // Each property
     for( const [key, value] of Object.entries( this.props.dataPoints ) ) {
+      let showItem = true;
+      if( wad.obs_table_fields ) {
+        showItem = wad.obs_table_fields.indexOf( key ) >= 0;
+      }
+      
       // Properties data length
-      if( value.data.length > 0 ) {
+      if( showItem && value.data.length > 0 ) {
         // Search for biggest date value (not ordered by date always)
         const biggest = value.data.reduce( ( prev, current ) => {
           return ( prev.x > current.x ) ? prev : current;
@@ -302,7 +307,7 @@ export class ChartTable extends Component {
         }
 
         // Check valid data  
-        if( biggest.y > 0 ) {
+        if( biggest.y >= 0 ) {
           lineTableRender.push( <li key={ key }>
             { value.description }
             <span>{ biggest.y }</span>

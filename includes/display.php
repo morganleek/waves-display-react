@@ -41,6 +41,12 @@
 		
 			// Enqueue
 			wp_enqueue_script('wad-scripts');
+
+			$obsTableFields = [];
+			if( !empty( $options['obs_table_fields'] ) ) {
+				$obs = str_replace( ' ', '', $options['obs_table_fields'] );
+				$obsTableFields = explode( ',', $obs );
+			}
 			
 			// Extras
 			wp_localize_script( 
@@ -51,7 +57,8 @@
 					'plugin' => WAD__PLUGIN_URL,
 					'googleApiKey' => $options['maps_key'],
 					'googleLat' => $options['maps_lat'],
-					'googleLng' => $options['maps_lng']
+					'googleLng' => $options['maps_lng'],
+					'obs_table_fields' => $obsTableFields
 				)
 			);
 		}
