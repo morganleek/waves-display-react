@@ -80,7 +80,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 					if( i % mod == 0 ) { // Reduce to every nth item according to MAX_ARROW_LIMIT
 						dataPoints.tp.data.push( { x: time, y: parseFloatOr( wave["Tp (s)"], 0.0 ) } );
 						dataPoints.tp.rotation.push( reverseRotation( wave["Dp (deg)"] ) );
-						dataPoints.tpdeg.data.push( { x: time, y: reverseRotation( wave["Dp (deg)"] ) } );
+						dataPoints.tpdeg.data.push( { x: time, y: wave["Dp (deg)"] } );
 					}
 				}
 				// Mean
@@ -88,7 +88,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 					if( i % mod == 0 ) { // Reduce to every nth item according to MAX_ARROW_LIMIT
 						dataPoints.tm.data.push( { x: time, y: parseFloatOr( wave["Tm (s)"], 0.0 ) } );
 						dataPoints.tm.rotation.push( reverseRotation( wave["Dm (deg)"] ) );
-						dataPoints.tmdeg.data.push( { x: time, y: reverseRotation( wave["Dm (deg)"] ) } );
+						dataPoints.tmdeg.data.push( { x: time, y: wave["Dm (deg)"] } );
 					}
 				}
 				// Spread
