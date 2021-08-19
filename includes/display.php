@@ -58,7 +58,10 @@
 					'googleApiKey' => $options['maps_key'],
 					'googleLat' => $options['maps_lat'],
 					'googleLng' => $options['maps_lng'],
-					'obs_table_fields' => $obsTableFields
+					'obs_table_fields' => $obsTableFields,
+					'buoy_display_key' => isset( $options['buoy_display_key'] ) ? $options['buoy_display_key'] : "0",
+					'buoy_display_init_current' => isset( $options['buoy_display_init_current'] ) ? $options['buoy_display_init_current'] : "0",
+					'buoy_display_init_historic' => isset( $options['buoy_display_init_historic'] ) ? $options['buoy_display_init_historic'] : "0" 
 				)
 			);
 		}

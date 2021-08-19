@@ -56,8 +56,13 @@ export class Map extends Component {
 
 	// Init
 	componentDidMount() {
-		// Set zoom
-		this.setState( { currentZoom: this.props.zoom } );
+		// Check for Current and Historic Settings
+		const live = ( wad.buoy_display_init_current ) ? parseInt( wad.buoy_display_init_current ) : true;
+		const historic = ( wad.buoy_display_init_historic ) ? parseInt( wad.buoy_display_init_historic ) : false;
+		// Zoom
+		const zoom = this.props.zoom;
+		// Set stataes
+		this.setState( { liveData: live, historicData: historic, currentZoom: zoom } );
 		// Get buoys
     getBuoys().then( json => {
 			if( json.length > 0 ) {
@@ -467,6 +472,29 @@ export class Map extends Component {
 			</InfoWindow>;	
 		}
 
+		let historicKey = '';
+		if( wad.buoy_display_key == undefined || wad.buoy_display_key == "1" ) {
+			// Run also if no setting defined
+			historicKey = <div id="historic-data">
+				<label for="show-historic">
+					<input 
+						type="checkbox"
+						name="show-historic"
+						checked={ historicData }
+						onChange={ this.onHistoricChange }
+						/>&nbsp;Historical Data
+				</label>
+				<label for="show-live">
+					<input 
+						type="checkbox"
+						name="show-live"
+						checked={ liveData }
+						onChange={ this.onLiveChange }
+						/>&nbsp;Live Data
+				</label>
+			</div>;
+		}
+
 		let mapRender = <h2>Loading&hellip;</h2>;
 		// Load when markers, zoom and center are defined
 		if( center && currentZoom && markers ) {
@@ -484,24 +512,7 @@ export class Map extends Component {
 				>
 					<>{ info }{ cluster }{ polylines }{ polylineLabels }</>
 				</GoogleMap>
-				<div id="historic-data">
-					<label for="show-historic">
-						<input 
-							type="checkbox"
-							name="show-historic"
-							checked={ historicData }
-							onChange={ this.onHistoricChange }
-							/>&nbsp;Historical Data
-					</label>
-					<label for="show-live">
-						<input 
-							type="checkbox"
-							name="show-live"
-							checked={ liveData }
-							onChange={ this.onLiveChange }
-							/>&nbsp;Live Data
-					</label>
-				</div>
+				{ historicKey }
 			</LoadScript>;
 		}
 

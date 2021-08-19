@@ -3,7 +3,7 @@
 	Plugin Name:  Waves Display React
 	Plugin URI:   https://github.com/morganleek/waves-display-react/
 	Description:  WP Plugin for displaying buoy data
-	Version:      1.0.1
+	Version:      1.0.2
 	Author:       https://morganleek.me/
 	Author URI:   https://morganleek.me/
 	License:      GPL2
