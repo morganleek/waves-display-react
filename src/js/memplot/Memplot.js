@@ -47,21 +47,16 @@ export class Memplot extends Component {
   render() {
 		const { data, loading } = this.state;
 		if( this.props.buoyId ) {
-			let content = '';
-			if( loading ) {
-				content = <p>Loading &hellip;</p>;
-			}
-			else {
+			let content = <p>Loading &hellip;</p>;
+			if( !loading ) {
 				if( data.length > 0 ) {
-					const lastNItems = data.length - Math.abs( data.length - 5 ); // Last 5 or less items
-					
 					let memplotsList = [];
-					// const last = data[data.length - 1];
-					// content = <MemplotImage buoyId={ this.props.buoyId } memplotId={ last.id } />
-					for( let i = data.length - lastNItems; i < data.length; i++ ) {
-						// console.log( data[i].id );
-						memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ data[i].id } key={ i } /> );
-					}
+					const memplotData = data.slice( -5 ).reverse(); // Final 5 items
+					
+					memplotData.forEach( ( item, i ) => {
+						memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ item.id } key={ i } /> );
+					} );
+
 					content = memplotsList;
 				}
 				else {
