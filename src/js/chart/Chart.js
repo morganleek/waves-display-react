@@ -113,9 +113,6 @@ export class Chart extends Component {
       const path = "?action=waf_rest_list_buoy_datapoints_csv&id=" + buoyId + "&start=" + start + "&end=" + end;
       this.setState( { downloadPath: wad.ajax + path } );
     }
-    else {
-      console.log( 'No time range specified' );
-    }
 	}
 
 	handleDateChanged() {
@@ -141,10 +138,6 @@ export class Chart extends Component {
   handleModalClose() {
     this.setState( { downloadPath: '' } );
   }
-  
-  // testEvent() {
-  //   console.log( 'test event' );
-  // }
   
   componentDidMount() {
     getBuoy( this.props.buoyId ).then( json => {
@@ -176,16 +169,34 @@ export class Chart extends Component {
       if( isExpanded ) {
         // Split apart
         let chartGraphTemp = [];
-        // Clone options
-        let optionsClone = Object.assign( {}, data.config.options );
-        optionsClone.plugins = {} // Not legend title
-        optionsClone.aspectRatio = wadGetAspectRatio( 0.5 ); // Half aspect ratio
         
         data.config.data.datasets.forEach( ( dataset, j ) => {
-          const datasetClone = Object.assign( {}, dataset );
-          // console.log( datasetClone );
+          // Create dateset from grouped dataset
+          const datasetClone = { ...dataset };
           datasetClone.hidden = false;
-          chartGraphTemp.unshift( <Line data={ { labels: data.config.data.labels, datasets: [ datasetClone ] } }  options={ optionsClone } key={ j } /> );
+          
+          // Create scales with only necessary ones
+          const currentY = datasetClone.yAxisID; // Current y-axis
+          const currentScales = {}; // New axis'
+          currentScales['x'] = { ...data.config.options.scales['x'] };
+          currentScales[currentY] = { ...data.config.options.scales[currentY] };
+          currentScales[currentY].position = "left"; // Make position left
+
+          // Clone options with updated options
+          const optionsClone = { ...data.config.options };
+          optionsClone.plugins = {} // Not legend title
+          optionsClone.aspectRatio = wadGetAspectRatio( 0.5 ); // Half aspect ratio
+          
+          // Assign
+          optionsClone.scales = currentScales;
+          
+          chartGraphTemp.unshift( 
+            <Line 
+              data={ { labels: data.config.data.labels, datasets: [ datasetClone ] } }  
+              options={ optionsClone } 
+              key={ j } 
+            /> 
+          );
         } );
         chartGraph = chartGraphTemp;
 

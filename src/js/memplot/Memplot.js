@@ -95,7 +95,6 @@ export class MemplotImage extends Component {
 		const { memplotId } = this.props;
 		if( prevProps.memplotId != memplotId ) {
 			this.loadMemplot();
-			console.log( 'change' );
 		}
 	}
 

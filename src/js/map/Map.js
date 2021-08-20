@@ -219,7 +219,6 @@ export class Map extends Component {
 			ref.panTo( newCenter );
 			ref.setZoom( 8 );
 
-			console.log( marker );
 			// Buoy info
 			// const infoWindow = <p>Start date:<br />End Date:<br />Download</p>
 

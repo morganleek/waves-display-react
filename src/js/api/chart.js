@@ -162,9 +162,7 @@ export function wadGenerateChartData( waves, includes, multiplier = 1 ) {
 		};
 		axes.x = x;
 
-		const isMobile = ( window.innerWidth < 768 ) ? false : true;
-
-		console.log( dataPoints );
+		const isMobile = ( window.innerWidth < 768 ) ? false : true; // Screen size
 		
 		// Y Axes
 		if( hasItem.hasOwnProperty( 'hsig' ) ) {
