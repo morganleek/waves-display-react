@@ -51,9 +51,11 @@ export class Memplot extends Component {
 			if( !loading ) {
 				if( data.length > 0 ) {
 					let memplotsList = [];
-					const memplotData = data.slice( -5 ).reverse(); // Final 5 items
+					// console.log( data );
+					const memplotData = data.slice( 0, 5 ).reverse(); // Final 5 items
 					
 					memplotData.forEach( ( item, i ) => {
+						
 						memplotsList.push( <MemplotImage buoyId={ this.props.buoyId } memplotId={ item.id } key={ i } /> );
 					} );
 
