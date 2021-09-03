@@ -33,7 +33,7 @@ function reverseRotation( rotation ) {
 
 // Wind speed to knots
 function windSpeedToKnots( speed ) {
-	return Math.floor( speed / 1.944 * 10 ) / 10;
+	return Math.floor( speed * 1.944 * 10 ) / 10;
 }
 
 // Get mod for max number of elements
