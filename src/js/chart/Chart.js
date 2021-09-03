@@ -328,13 +328,13 @@ export class ChartTable extends Component {
     }
 
     // Create date string
-    let recentData = true;
+    let hasRecentData = false;
     if( last > 0 ) {
+      const diff = 4 * 60 * 60 * 1000; // 4 hours
       const lastTime = DateTime.fromMillis( last );
-      const future = ( 2 * 24 * 60 * 60 * 1000 + Date.now() ); // 2 days
-      // Mark if last record is more than 2 days
-      recentData = future > last;
-      dateTime = <span className={ classNames( { "recent-date": recentData, "out-of-date": !recentData } ) }>{ lastTime.toFormat( 'd LLL y h:mma' ) }</span>
+      // Mark if last record is more than 4 hours
+      hasRecentData = last + diff > Date.now();
+      dateTime = <span className={ classNames( { "recent-date": hasRecentData, "out-of-date": !hasRecentData } ) }>{ lastTime.toFormat( 'd LLL y h:mma' ) }</span>
     }
 
     return (
