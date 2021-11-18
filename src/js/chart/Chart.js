@@ -133,6 +133,11 @@ export class Chart extends Component {
     const { downloadPath } = this.state;
     window.location = downloadPath;
     this.setState( { downloadPath: '' } );
+    // Record in analytics
+    if( gtag ) {
+      gtag( 'event', 'csvExport', { 'method': downloadPath } );
+      // ga( 'send', 'event', 'ExportData', 'download', downloadPath );
+    }
   }
 
   handleModalClose() {
