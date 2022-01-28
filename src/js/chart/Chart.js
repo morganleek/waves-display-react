@@ -56,6 +56,7 @@ export class Charts extends Component {
                   buoyDownloadText={ row.download_text }
                   updateCenter={ this.props.updateCenter }
                   updateZoom={ this.props.updateZoom }
+                  downloadEnabled={ parseInt( row.download_enabled ) }
                   key={ index }
             />
           )
@@ -159,11 +160,11 @@ export class Chart extends Component {
   
   render() {
     let chartGraph = <p>Loading &hellip;</p>;
-    let chartModal, chartTable, buttonGroup, chartBuoyDetails;
+    let chartModal, chartTable, buttonGroup, chartBuoyDetails, downloadButton;
     const { data, isExpanded, dateRange, needsUpdating, downloadPath } = this.state;
     const [ startDate, endDate ] = dateRange;
     const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
-    const buoyLabel = this.props.buoyLabel;
+    const { buoyLabel, downloadEnabled } = this.props;
     
     if( startDate && endDate && needsUpdating ) {
       this.setState( { needsUpdating: false } );
@@ -217,12 +218,12 @@ export class Chart extends Component {
         chartGraph = <Line data={ data.config.data } options={ data.config.options } />;
       }
 
-
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
+      downloadButton = ( downloadEnabled ) ? <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() } ><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button> : '';
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) } >
         <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleCentreClick() }><i className={ classNames( ['fa'], ['fa-crosshairs'] ) }></i> Centre</button>
-				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() }><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>
+				{ downloadButton }
 				<DatePicker
           selectsRange={ true }
           startDate={ startDate }
