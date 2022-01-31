@@ -60,6 +60,16 @@
 										'type' => 'checkbox'
 									)
 								)
+							),
+							array(
+								'title' => 'Export',
+								'fields' => array(
+									array(
+										'label' => 'Require user info for download',
+										'name' => 'buoy_display_require_user_info',
+										'type' => 'checkbox'
+									)
+								)
 							)
 						);
 
