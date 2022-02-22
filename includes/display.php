@@ -63,6 +63,7 @@
 					'buoy_display_init_current' => isset( $options['buoy_display_init_current'] ) ? $options['buoy_display_init_current'] : "0",
 					'buoy_display_init_historic' => isset( $options['buoy_display_init_historic'] ) ? $options['buoy_display_init_historic'] : "0",
 					'buoy_display_require_user_info' => isset( $options['buoy_display_require_user_info'] ) ? $options['buoy_display_require_user_info'] : "0",
+					'user_data_nonce' => wp_create_nonce( 'user_submitted_data' . date( 'YmdHa') )
 				)
 			);
 		}

@@ -245,6 +245,7 @@ export class Chart extends Component {
         const ref = React.createRef();
         chartModal = <ChartDownloadModal 
           title="Terms and Conditions"
+          buoyId={ this.props.buoyId }
           license={ this.props.buoyDownloadText }
           close={ this.handleModalClose }
           download={ this.handleDownloadClick }

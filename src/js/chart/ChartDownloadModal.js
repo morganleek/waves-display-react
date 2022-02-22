@@ -3,9 +3,9 @@ import { useFormik } from 'formik';
 const classNames = require('classnames');
 
 
-export const ChartDownloadModal = ( { close, download, downloadEnabled, downloadRequiresDetails, title, license } ) => {
+export const ChartDownloadModal = ( { close, download, downloadEnabled, downloadRequiresDetails, title, license, buoyId } ) => {
   const downloadButton = ( downloadEnabled && !downloadRequiresDetails ) ? <button type="button" className={ classNames( 'btn', 'btn-primary', 'btn-download' ) } onClick={ download } >Download</button> : '';
-  const downloadForm = ( downloadRequiresDetails ) ? <ChartDownloadUserForm download={ download }></ChartDownloadUserForm> : '';
+  const downloadForm = ( downloadRequiresDetails ) ? <ChartDownloadUserForm download={ download } buoyId={ buoyId }></ChartDownloadUserForm> : '';
   return (
     <div className={ classNames( 'modal', 'fade', 'show' ) } id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" >
       <div className={ classNames( 'modal-dialog' ) }>
@@ -28,7 +28,7 @@ export const ChartDownloadModal = ( { close, download, downloadEnabled, download
   ) 
 };
 
-export const ChartDownloadUserForm = ( { download } ) => {
+export const ChartDownloadUserForm = ( { download, buoyId } ) => {
   const formik = useFormik({
     initialValues: {
       fullName: '', 
@@ -53,16 +53,30 @@ export const ChartDownloadUserForm = ( { download } ) => {
       return errors;
     },
     onSubmit: ( values, { setSubmitting } ) => {
-      console.log( JSON.stringify( values, null, 2 ) );
+      // Don't submit form
       setSubmitting( false );
+      
+      // Send form data
+      const form_data = JSON.stringify( values, null, 2 );
+      const init = {
+        method: 'POST'
+      }
+      fetch( wad.ajax + "?action=waf_collect_user_data&buoy_id=" + buoyId + "&nonce=" + wad.user_data_nonce + "&form_data=" + form_data, init ) 
+        .then( response => {
+          if( !response.ok ) throw Error( response.statusText );
+          console.log( 'Form submitted successfully' );
+        } );
+      
+      // Trigger download
       download();
+
     },
   });
 
   return (
     <form id="chart-download-user-form" onSubmit={formik.handleSubmit}>
       <div class="form-group">
-        <label htmlFor="fullName">Full Name</label><br />
+        <label htmlFor="fullName">Full Name *</label><br />
         <input 
           type="text"
           class="form-control"
@@ -72,7 +86,7 @@ export const ChartDownloadUserForm = ( { download } ) => {
         { formik.touched.fullName && formik.errors.fullName ? <div>{ formik.errors.fullName }</div> : null }
       </div>
       <div class="form-group">
-        <label for="company">Company</label><br />
+        <label for="company">Company *</label><br />
         <input 
           type="text"
           class="form-control"
@@ -82,7 +96,7 @@ export const ChartDownloadUserForm = ( { download } ) => {
         { formik.touched.company && formik.errors.company ? <div>{ formik.errors.company }</div> : null }
       </div>
       <div class="form-group">
-        <label for="state">State/Provence</label><br />
+        <label for="state">State/Provence *</label><br />
         <input 
           type="text"
           class="form-control"
@@ -92,7 +106,7 @@ export const ChartDownloadUserForm = ( { download } ) => {
         { formik.touched.state && formik.errors.state ? <div>{ formik.errors.state }</div> : null }
       </div>
       <div class="form-group">
-        <label for="country">Country</label><br />
+        <label for="country">Country *</label><br />
         <input 
           type="text"
           class="form-control"
@@ -102,7 +116,7 @@ export const ChartDownloadUserForm = ( { download } ) => {
         { formik.touched.country && formik.errors.country ? <div>{ formik.errors.country }</div> : null }
       </div>
       <div class="form-group">
-        <label for="howWillYou">How will you use the data:</label>
+        <label for="howWillYou">How will you use the data: *</label>
         <select 
           class="form-control" 
           name="howWillYou" 
@@ -127,7 +141,7 @@ export const ChartDownloadUserForm = ( { download } ) => {
         ) : null }
       </div>
       <div class="form-group">
-        <label for="howDidYou">How did you hear about us:</label>
+        <label for="howDidYou">How did you hear about us: *</label>
         <select 
           class="form-control" 
           name="howDidYou"
