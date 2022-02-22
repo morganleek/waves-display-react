@@ -39,6 +39,7 @@ export class Map extends Component {
 			buoyDownloadWindow: false,
 			buoyDownloadText: '',
 			downloadPath: '',
+			downloadEnabled: true,
 			currentZoom: 0,
 			infoWindow: {
 				visible: false,
@@ -68,6 +69,7 @@ export class Map extends Component {
 			if( json.length > 0 ) {
 				json.forEach( ( element, index ) => {
 					if( parseInt( element.drifting ) == 0 ) {
+						
 						let marker = {
 							buoyId: element.id,
 							label: element.web_display_name,
@@ -76,6 +78,7 @@ export class Map extends Component {
 							isEnabled: parseInt( element.is_enabled ),
 							buoyDownloadText: element.download_text,
 							downloadPath: '',
+							downloadEnabled: parseInt( element.download_enabled ),
 							description: element.description,
 							startDate: element.start_date,
 							endDate: element.end_date
@@ -128,6 +131,7 @@ export class Map extends Component {
 						};
 						this.setState( { polylineTimes: [...this.state.polylineTimes, polyLineTime] } );
 
+						
 						// Add Marker
 						let marker = {
 							buoyId: element.id,
@@ -137,6 +141,7 @@ export class Map extends Component {
 							isEnabled: parseInt( element.is_enabled ),
 							buoyDownloadText: element.download_text,
 							downloadPath: '',
+							downloadEnabled: parseInt( element.download_enabled ),
 							content: element.description,
 							startDate: element.start_date,
 							endDate: element.end_date
@@ -221,7 +226,7 @@ export class Map extends Component {
 
 			// Buoy info
 			// const infoWindow = <p>Start date:<br />End Date:<br />Download</p>
-
+			console.log( marker );
 			this.setState( { 
 				infoWindow: {
 					visible: true,
@@ -232,7 +237,8 @@ export class Map extends Component {
 					endDate: marker.endDate
 				},
 				downloadPath: wad.ajax + path,
-				buoyDownloadText: marker.buoyDownloadText
+				buoyDownloadText: marker.buoyDownloadText,
+				downloadEnabled: marker.downloadEnabled
 			} );
 		}
 	}
@@ -260,7 +266,8 @@ export class Map extends Component {
 				content: ''
 			},
 			downloadPath: '',
-			buoyDownloadText: ''
+			buoyDownloadText: '',
+			downloadEnabled: true
 		} );
 	}
 
@@ -311,11 +318,11 @@ export class Map extends Component {
 	handleDownloadClick() {
     const { downloadPath } = this.state;
     window.location = downloadPath;
-    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false } );
+    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false, downloadEnabled: true } );
   }
 
   handleModalClose() {
-    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false } );
+    this.setState( { downloadPath: '', buoyDownloadText: '', buoyDownloadWindow: false, downloadEnabled: true } );
   }
 	
 	setBounds = ( ) => {
@@ -349,9 +356,14 @@ export class Map extends Component {
 			downloadPath, 
 			buoyDownloadWindow,
 			buoyDownloadText, 
+			downloadEnabled,
 			currentZoom,
 			infoWindow
 		} = this.state;
+
+		// console.log( this.state );
+		// console.log( labelIcon );
+		// console.log( downloadEnabled );
 
 		// Polylines
 		let polylines = [];
@@ -406,7 +418,7 @@ export class Map extends Component {
 							// Hide historic buoys OR hide live buoys
 							return;
 						}
-						
+						console.log( marker );
 						return (
 							<MapMarker 
 								buoyId={ marker.buoyId } 
@@ -420,6 +432,7 @@ export class Map extends Component {
 								startDate={ marker.startDate }
 								endDate={ marker.endDate }
 								description={ marker.description }
+								downloadEnabled={ marker.downloadEnabled }
 							/>
 						) 
 					} )
@@ -436,6 +449,7 @@ export class Map extends Component {
 				license={ buoyDownloadText }
 				close={ this.handleModalClose }
 				download={ this.handleDownloadClick }
+				downloadEnabled={ downloadEnabled }
 				ref={ ref }
 			/>;
 		}
@@ -464,6 +478,7 @@ export class Map extends Component {
 							End date: { eDate.toDateString() }<br />
 						</p>
 						<p>
+							
 							<a href="#" onClick={ this.onInfoWindowDownload }>Download Data Archive</a>
 						</p>
 					</div>
@@ -532,6 +547,7 @@ const MapMarker = ( props ) => {
 			buoyDownloadText: props.buoyDownloadText,
 			startDate: props.startDate,
 			endDate: props.endDate, 
+			downloadEnabled: props.downloadEnabled,
 			description: props.description
 		} );
 	} 
