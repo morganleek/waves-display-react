@@ -226,7 +226,7 @@ export class Map extends Component {
 
 			// Buoy info
 			// const infoWindow = <p>Start date:<br />End Date:<br />Download</p>
-			console.log( marker );
+	
 			this.setState( { 
 				infoWindow: {
 					visible: true,
@@ -361,10 +361,7 @@ export class Map extends Component {
 			infoWindow
 		} = this.state;
 
-		// console.log( this.state );
-		// console.log( labelIcon );
-		// console.log( downloadEnabled );
-
+	
 		// Polylines
 		let polylines = [];
 		if( polylineTimes ) {
@@ -418,7 +415,7 @@ export class Map extends Component {
 							// Hide historic buoys OR hide live buoys
 							return;
 						}
-						console.log( marker );
+						
 						return (
 							<MapMarker 
 								buoyId={ marker.buoyId } 

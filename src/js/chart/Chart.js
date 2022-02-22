@@ -57,6 +57,7 @@ export class Charts extends Component {
                   updateCenter={ this.props.updateCenter }
                   updateZoom={ this.props.updateZoom }
                   downloadEnabled={ parseInt( row.download_enabled ) }
+                  downloadRequiresDetails={ parseInt( row.download_requires_details ) }
                   key={ index }
             />
           )
@@ -164,7 +165,7 @@ export class Chart extends Component {
     const { data, isExpanded, dateRange, needsUpdating, downloadPath } = this.state;
     const [ startDate, endDate ] = dateRange;
     const expandedLabel = ( isExpanded ) ? 'Collapse' : 'Expand';
-    const { buoyLabel, downloadEnabled } = this.props;
+    const { buoyLabel, downloadEnabled, downloadRequiresDetails } = this.props;
     
     if( startDate && endDate && needsUpdating ) {
       this.setState( { needsUpdating: false } );
@@ -248,6 +249,7 @@ export class Chart extends Component {
           close={ this.handleModalClose }
           download={ this.handleDownloadClick }
           downloadEnabled={ downloadEnabled }
+          downloadRequiresDetails={ downloadRequiresDetails }
           ref={ ref }
         />;
       }
