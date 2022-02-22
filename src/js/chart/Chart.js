@@ -219,7 +219,7 @@ export class Chart extends Component {
       }
 
       chartTable = <ChartTable dataPoints={ data.dataPoints } lastUpdated={ this.props.lastUpdated } />;
-      downloadButton = ( downloadEnabled ) ? <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() } ><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button> : '';
+      downloadButton = <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExportClick() } ><i className={ classNames( ['fa'], ['fa-floppy-o'] ) }></i> Export Data</button>;
 			buttonGroup = <div className={ classNames( ['btn-group', 'pull-right'] ) } >
         <button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleExpandClick() }><i className={ classNames( ['fa'], ['fa-expand'] ) }></i> { expandedLabel }</button>
 				<button className={ classNames( ['btn', 'btn-outline-secondary' ] ) } onClick={ () => this.handleCentreClick() }><i className={ classNames( ['fa'], ['fa-crosshairs'] ) }></i> Centre</button>
@@ -247,6 +247,7 @@ export class Chart extends Component {
           license={ this.props.buoyDownloadText }
           close={ this.handleModalClose }
           download={ this.handleDownloadClick }
+          downloadEnabled={ downloadEnabled }
           ref={ ref }
         />;
       }

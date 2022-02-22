@@ -1,0 +1,8 @@
+[31-Oct-2021 02:21:44 Australia/Sydney] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/wacoastl/wawaves.org/wp-content/plugins/waves-display-react/includes/admin-options.php:137
+Stack trace:
+#0 {main}
+  thrown in /home/wacoastl/wawaves.org/wp-content/plugins/waves-display-react/includes/admin-options.php on line 137
+[10-Dec-2021 22:47:55 Australia/Sydney] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home/wacoastl/wawaves.org/wp-content/plugins/waves-display-react/includes/display.php:70
+Stack trace:
+#0 {main}
+  thrown in /home/wacoastl/wawaves.org/wp-content/plugins/waves-display-react/includes/display.php on line 70
