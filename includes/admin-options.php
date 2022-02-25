@@ -65,9 +65,15 @@
 								'title' => 'Export',
 								'fields' => array(
 									array(
-										'label' => 'Require user info for download',
-										'name' => 'buoy_display_require_user_info',
-										'type' => 'checkbox'
+										'label' => 'Download requires user information',
+										'name' => 'buoy_display_user_info_required',
+										'type' => 'checkbox',
+										'disabled' => 'disabled'
+									),
+									array( 
+										'label' => 'User info email recipient ',
+										'name' => 'buoy_display_user_info_email_recipient',
+										'placeholder' => ''
 									)
 								)
 							)
@@ -97,6 +103,7 @@
 															value="' . $value . '" 
 															' . $checked . '
 															placeholder="' . $field['placeholder'] . '" 
+															' . ( isset( $field['disabled'] ) ? 'disabled="disabled"' : '' ) . '
 															class="regular-text">';
 														print isset( $field['description'] ) ? '<p>' . $field['description'] . '</p>' : '';
 													print '</td>';
